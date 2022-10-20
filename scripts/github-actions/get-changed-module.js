@@ -54,7 +54,7 @@ async function getChangedModule({ require, github, context, core }) {
           const dir = path.dirname(file.filename);
           const segments = dir.split("/");
           // modules/moduleFolder/moduleRoot/* => modules/moduleFolder/moduleRoot
-          return segments.slice(0, 3).join("/");
+          return segments.slice(0, 4).join("/");
         })
         // Ignore removed module directories.
         .filter((dir) => fs.existsSync(dir))
