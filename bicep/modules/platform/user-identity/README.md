@@ -1,6 +1,6 @@
 # User Managed Identity
 
-This module deploys a User Managed Identity
+This module deploys a user managed identity
 
 ## Description
 
