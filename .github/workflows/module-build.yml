@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "bicep/modules/public/**"
+      - "bicep/modules/**"
   workflow_dispatch: #Manual execution will be good for debugging
 
 jobs:
