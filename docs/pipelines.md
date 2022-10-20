@@ -6,6 +6,10 @@ A number of CI workflows are leveraged in this repo to test the bicep files to e
 
 It's essential to catch as many problems before a single resource is deployed to real infrastructure. There are a lot of tools and techniques that can be leveraged to catch functional or syntactical problems depending on your authoring language and platform.
 
+#### Prettier
+
+A [node project](https://prettier.io/) for properly formatting code files that follows an opinionated pattern will be used to check formatting of files.
+
 #### PSRule for Azure
 
 An interesting project for performing pre/post validation of Azure Resources against the [Well Architected Framework](https://learn.microsoft.com/en-us/azure/architecture/framework/) is [PSRule for Azure](https://azure.github.io/PSRule.Rules.Azure/). Over [200 rules](https://azure.github.io/PSRule.Rules.Azure/en/baselines/Azure.All/) will be evaluated against your Arm template, ranging from Security configuration to naming conventions.
