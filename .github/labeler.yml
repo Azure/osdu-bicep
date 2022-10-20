@@ -2,9 +2,9 @@
 module:
   - bicep/modules/**/*
 
-# Add 'test' label to any change to *.spec.js files
-test:
-  - "*.spec.js"
+infrastructure:
+  - bicep/main.js
+  - bicep/private/modules/**/*
 
 # Add 'documentation' label to any change to *.md files
 documentation:
