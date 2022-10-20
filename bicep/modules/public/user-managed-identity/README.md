@@ -25,7 +25,7 @@ This module creates a user managed identity with an optional lock.
 ## Examples
 
 ```bicep
-module example 'br:osdubicep.azurecr.io/bicep/modules/public/user-identity:1.0.1' = {
+module example 'br:osdubicep.azurecr.io/bicep/modules/public/user-managed-identity:1.0.1' = {
   name: 'user_identity'
   params: {
     resourceName: 'id-${uniqueString(resourceGroup().id)}'
