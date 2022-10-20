@@ -15,7 +15,7 @@ Have awareness of the various workflows that run on Push / PR / Schedule.
 | Build    | PR         | `Quality` To run the bicep linter upon changes to the bicep files |
 | Greet    | Issue / PR | `Community` Greeting new contributors to the repo                 |
 | Labeller | PR         | `Tidy` Adds relevant labels to PR's based on files changed        |
-| Release  | Manual     | Publishes a new release and/or new Wizard Web app to GitHub Pages |
+| Release  | Manual     | Publishes a new release                                           |
 
 ### Enforced PR Checks
 

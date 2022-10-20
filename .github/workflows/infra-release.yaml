@@ -1,4 +1,4 @@
-name: Action - Infra Release
+name: Infra - Release
 
 on:
   workflow_dispatch:

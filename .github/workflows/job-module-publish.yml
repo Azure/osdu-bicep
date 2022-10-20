@@ -1,4 +1,4 @@
-name: Job - Publish Module
+name: Job - Module Publish
 
 on:
   workflow_call:

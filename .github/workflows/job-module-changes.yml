@@ -1,4 +1,4 @@
-name: Job - Detect Changes
+name: Job - Module Changes
 
 on:
   workflow_call:

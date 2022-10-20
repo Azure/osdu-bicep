@@ -70,7 +70,7 @@ Documentation on the main `Readme.md` for the modules contains a table with all 
 
 ### Integration Test
 
-### Infra Build
+### Infra Release
 
 ## Misc actions used in this repo
 

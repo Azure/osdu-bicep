@@ -1,4 +1,4 @@
-name: Action - Integration Test
+name: Infra - Test
 
 permissions:
   id-token: write

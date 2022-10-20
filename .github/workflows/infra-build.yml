@@ -1,6 +1,6 @@
 # Builds a JSON file from the main.json bicep
 
-name: Action - Infra Build
+name: Infra - Build
 
 on:
   pull_request: #On PR, we're just doing validation that it compiled to support the build policy

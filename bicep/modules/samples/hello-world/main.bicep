@@ -2,4 +2,4 @@
 param name string
 
 @description('The hello message.')
-output greeting string = 'Hello from Bicep registry - Hi ${name}!'
+output greeting string = 'Hello from Bicep registry - Hi there ${name}!'

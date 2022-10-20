@@ -1,4 +1,4 @@
-name: Action - Module Release
+name: Module - Release
 
 on:
   push:
