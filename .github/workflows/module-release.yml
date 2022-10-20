@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "bicep/modules/**"
+      - "bicep/modules/public/**"
 
 jobs:
   get-module-to-publish:
