@@ -1,9 +1,10 @@
 /*
   This is the main bicep entry file.
 
-  10.19.22: Initial Version
+  10.20.22: Updated
 --------------------------------
   - Establishing the Pipelines
+  - Added an Identity
 */
 
 @description('Specify the Azure region to place the application definition.')
