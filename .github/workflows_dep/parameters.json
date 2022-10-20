@@ -5,8 +5,5 @@
     "template": "bicep/main.bicep"
   },
   "parameters": {
-    "storageAccountType": {
-      "value": "Standard_GRS"
-    }
   }
 }
