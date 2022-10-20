@@ -11,7 +11,7 @@ This module creates a user managed identity with an optional lock.
 | Name           | Type     | Required | Description                         |
 | :------------- | :------: | :------: | :---------------------------------- |
 | `resourceName` | `string` | Yes      | Used to name all resources          |
-| `location`     | `string` | No       | User Managed Identity location.     |
+| `location`     | `string` | No       | User Managed Identity Location.     |
 | `tags`         | `object` | No       | Tags.                               |
 | `lock`         | `string` | No       | Optional. Specify the type of lock. |
 
