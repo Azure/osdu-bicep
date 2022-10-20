@@ -127,7 +127,7 @@ jobs:
       - name: Parameter Value Augmentation
         id: params
         env:
-          DEFAULTRGNAME: osdu-bicep-integration
+          DEFAULTRGNAME: osdubicep-integration
         run: |
           if [ -z "${{ github.event.inputs.region }}" ]
           then
