@@ -4,6 +4,5 @@
   "metadata": {
     "template": "bicep/main.bicep"
   },
-  "parameters": {
-  }
+  "parameters": {}
 }
