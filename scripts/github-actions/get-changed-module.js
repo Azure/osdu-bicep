@@ -49,7 +49,7 @@ async function getChangedModule({ require, github, context, core }) {
   const moduleDirs = [
     ...new Set(
       data.files
-        .filter((file) => file.filename.startsWith("modules/"))
+        .filter((file) => file.filename.startsWith("bicep/modules/"))
         .map((file) => {
           const dir = path.dirname(file.filename);
           const segments = dir.split("/");
