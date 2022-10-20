@@ -1,4 +1,6 @@
-# OSDU Bicep
+| Module                         |                                                                                                                                                          Version |                                                                                                                                                                                                                              Docs |
+| :----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | ------------ |
+| `public/user-managed-identity` | <a href="https://github.com/azure/osdubicep/releases/tag/public/user-managed-identity/1.0.1"><image src="https://img.shields.io/badge/osdubicep-1.0.1-blue"></a> | [🦾 Code](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/user-managed-identity/main.bicep) ｜ [📃 Readme](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/user-managed-identity/README.md) | # OSDU Bicep |
 
 This project is used to host Bicep infrastructure that can be used in deploying OSDU on Azure.
 
