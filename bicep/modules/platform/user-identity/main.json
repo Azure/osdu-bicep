@@ -1,0 +1,89 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.11.1.770",
+      "templateHash": "16153921255844942117"
+    }
+  },
+  "parameters": {
+    "resourceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Used to name all resources"
+      },
+      "maxLength": 20,
+      "minLength": 3
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "User Managed Identity Location."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags."
+      }
+    },
+    "lock": {
+      "type": "string",
+      "defaultValue": "NotSpecified",
+      "metadata": {
+        "description": "Optional. Specify the type of lock."
+      },
+      "allowedValues": [
+        "CanNotDelete",
+        "NotSpecified",
+        "ReadOnly"
+      ]
+    }
+  },
+  "variables": {
+    "name": "[format('id-{0}{1}', replace(parameters('resourceName'), '-', ''), uniqueString(resourceGroup().id, parameters('resourceName')))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2018-11-30",
+      "name": "[if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name'))]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]"
+    },
+    {
+      "condition": "[not(equals(parameters('lock'), 'NotSpecified'))]",
+      "type": "Microsoft.Authorization/locks",
+      "apiVersion": "2017-04-01",
+      "scope": "[format('Microsoft.ManagedIdentity/userAssignedIdentities/{0}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]",
+      "name": "[format('{0}-{1}-lock', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')), parameters('lock'))]",
+      "properties": {
+        "level": "[parameters('lock')]",
+        "notes": "[if(equals(parameters('lock'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot modify the resource or child resources.')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "id": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]",
+      "metadata": {
+        "description": "The resource ID of the managed identity."
+      }
+    },
+    "principalId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))).principalId]",
+      "metadata": {
+        "description": "The principal id for the managed identity."
+      }
+    }
+  }
+}

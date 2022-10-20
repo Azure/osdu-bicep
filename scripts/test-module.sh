@@ -18,8 +18,8 @@ WHAT_IF=1
 VALIDATE_TEMPLATE=1
 
 # ARM template and parameters file
-TEMPLATE="$PARENT_DIR/modules/platform/$MODULE/test/main.test.bicep"
-PARAMETERS="$PARENT_DIR/modules/platform/$MODULE/test/parameters.json"
+TEMPLATE="$PARENT_DIR/bicep/modules/platform/$MODULE/test/main.test.bicep"
+PARAMETERS="$PARENT_DIR/bicep/modules/platform/$MODULE/test/parameters.json"
 
 # Retrieve Resource Group Name
 if [ -z $RESOURCE_GROUP_NAME ]; then
