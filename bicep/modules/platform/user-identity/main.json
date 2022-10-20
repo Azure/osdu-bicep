@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "16153921255844942117"
+      "templateHash": "8975556189908846852"
     }
   },
   "parameters": {
@@ -21,7 +21,7 @@
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
       "metadata": {
-        "description": "User Managed Identity location."
+        "description": "Resource location."
       }
     },
     "tags": {
