@@ -59,7 +59,7 @@ jobs:
           add: "."
 
   validate-non-module-files:
-    name: Validate Javascript
+    name: Validate Formatting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

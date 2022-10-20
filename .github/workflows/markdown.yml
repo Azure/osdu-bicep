@@ -1,7 +1,9 @@
-on: [pull_request, workflow_dispatch]
-  paths:
-    - "*.md"
-    - "docs/*.md"
+on:
+  pull_request:
+    paths:
+      - "*.md"
+      - "docs/*.md"
+  workflow_dispatch:
 
 name: Auto - Documentation Check
 jobs:
@@ -18,7 +20,7 @@ jobs:
       - name: Check spelling of markdown files
         uses: crate-ci/typos@master
         with:
-          files: 
+          files:
             - "*.md"
             - "docs/*.md"
           config: ./.github/workflows_dep/_typos.toml
