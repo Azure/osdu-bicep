@@ -5,7 +5,7 @@ targetScope = 'resourceGroup'
 @description('Used to name all resources')
 param resourceName string
 
-@description('Resource location.')
+@description('The resource location.')
 param location string = resourceGroup().location
 
 @description('Tags.')
