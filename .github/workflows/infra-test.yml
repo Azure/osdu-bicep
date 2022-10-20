@@ -15,6 +15,7 @@ on:
     branches: [main]
     paths:
       - "bicep/**/*"
+      - "!bicep/modules/**/*"
       - ".github/workflows_dep/parameters.json"
 
   schedule:
