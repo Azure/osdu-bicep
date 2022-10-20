@@ -31,11 +31,12 @@ jobs:
       # always a delay in updating Bicep CLI in the job runner environments.
       - name: Install the latest Bicep CLI
         run: |
-          mkdir temp & cd temp
+          mkdir -f install & cd install
           curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
           chmod +x ./bicep
           sudo mv ./bicep /usr/local/bin/bicep
           bicep --version
+          cd .. && rm -rf install
 
       - name: Install Bicep registry module tool
         run: dotnet tool install --global Azure.Bicep.RegistryModuleTool
