@@ -11,7 +11,7 @@ VALIDATE_TEMPLATE=1
 
 # ARM template and parameters file
 TEMPLATE="$PARENT_DIR/bicep/main.bicep"
-PARAMETERS="$SCRIPT_DIR/parameters.json"
+PARAMETERS="$PARENT_DIR/parameters.json"
 
 # Retrieve Resource Group Name
 if [ -z $RESOURCE_GROUP_NAME ]; then
