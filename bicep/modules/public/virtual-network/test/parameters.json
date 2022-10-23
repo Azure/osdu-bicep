@@ -5,11 +5,14 @@
       "template": "../main.bicep"
     },
     "parameters": {
-      "location": {
+      "hubLocation": {
         "value": "southcentralus"
       },
-      "resourceName": {
-        "value": "osdu"
+      "spoke1Location": {
+        "value": "eastus2"
+      },
+      "spoke2Location": {
+        "value": "westus"
       }
     }
   }

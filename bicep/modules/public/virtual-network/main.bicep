@@ -1,16 +1,15 @@
 targetScope = 'resourceGroup'
 
-@description('Resource Name.')
-param resourceName string = 'vnet-${uniqueString(resourceGroup().id)}'
+@minLength(2)
+@maxLength(59)
+@description('Used to name all resources')
+param resourceName string
 
 @description('Resource Location.')
 param location string = resourceGroup().location
 
 @description('Resource Tags (Optional).')
 param tags object = {}
-
-// @description('Enable lock to prevent accidental deletion')
-// param enableDeleteLock bool = false
 
 @allowed([
   'CanNotDelete'
@@ -19,6 +18,9 @@ param tags object = {}
 ])
 @description('Optional. Specify the type of lock.')
 param lock string = 'NotSpecified'
+
+@description('Optional. Virtual Network Peerings configurations')
+param virtualNetworkPeerings array = []
 
 @description('Optional. Resource ID of the diagnostic log analytics workspace.')
 param diagnosticWorkspaceId string = ''
@@ -93,6 +95,8 @@ param roleAssignments array = [
   */
 ]
 
+var name = 'vnet-${replace(resourceName, '-', '')}${uniqueString(resourceGroup().id, resourceName)}'
+
 var networkSecurityGroupId = { id: newOrExistingNSG == 'new' ? networkSecurityGroup.id : existingNetworkSecurityGroup.id }
 
 var diagnosticsLogs = [for log in logsToEnable: {
@@ -154,7 +158,7 @@ resource existingNetworkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2
 
 // Create a Virtual Network
 resource vnet 'Microsoft.Network/virtualNetworks@2021-02-01' = {
-  name: resourceName
+  name: length(name) > 63 ? substring(name, 0, 64) : name
   location: location
   tags: tags
   properties: {
@@ -223,6 +227,37 @@ module virtualNetwork_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, in
   }
 }]
 
+
+// Local to Remote peering
+module virtualNetwork_peering_local '.bicep/peering.bicep' = [for (peering, index) in virtualNetworkPeerings: {
+  name: '${uniqueString(deployment().name, location)}-virtualNetworkPeering-local-${index}'
+  params: {
+    localVnetName: vnet.name
+    remoteVirtualNetworkId: peering.remoteVirtualNetworkId
+    name: contains(peering, 'name') ? peering.name : '${name}-${last(split(peering.remoteVirtualNetworkId, '/'))}'
+    allowForwardedTraffic: contains(peering, 'allowForwardedTraffic') ? peering.allowForwardedTraffic : true
+    allowGatewayTransit: contains(peering, 'allowGatewayTransit') ? peering.allowGatewayTransit : false
+    allowVirtualNetworkAccess: contains(peering, 'allowVirtualNetworkAccess') ? peering.allowVirtualNetworkAccess : true
+    doNotVerifyRemoteGateways: contains(peering, 'doNotVerifyRemoteGateways') ? peering.doNotVerifyRemoteGateways : true
+    useRemoteGateways: contains(peering, 'useRemoteGateways') ? peering.useRemoteGateways : false
+  }
+}]
+
+// Remote to local peering (reverse)
+module virtualNetwork_peering_remote '.bicep/peering.bicep' = [for (peering, index) in virtualNetworkPeerings: if (contains(peering, 'remotePeeringEnabled') ? peering.remotePeeringEnabled == true : false) {
+  name: '${uniqueString(deployment().name, location)}-virtualNetworkPeering-remote-${index}'
+  scope: resourceGroup(split(peering.remoteVirtualNetworkId, '/')[2], split(peering.remoteVirtualNetworkId, '/')[4])
+  params: {
+    localVnetName: last(split(peering.remoteVirtualNetworkId, '/'))
+    remoteVirtualNetworkId: vnet.id
+    name: contains(peering, 'remotePeeringName') ? peering.remotePeeringName : '${last(split(peering.remoteVirtualNetworkId, '/'))}-${name}'
+    allowForwardedTraffic: contains(peering, 'remotePeeringAllowForwardedTraffic') ? peering.remotePeeringAllowForwardedTraffic : true
+    allowGatewayTransit: contains(peering, 'remotePeeringAllowGatewayTransit') ? peering.remotePeeringAllowGatewayTransit : false
+    allowVirtualNetworkAccess: contains(peering, 'remotePeeringAllowVirtualNetworkAccess') ? peering.remotePeeringAllowVirtualNetworkAccess : true
+    doNotVerifyRemoteGateways: contains(peering, 'remotePeeringDoNotVerifyRemoteGateways') ? peering.remotePeeringDoNotVerifyRemoteGateways : true
+    useRemoteGateways: contains(peering, 'remotePeeringUseRemoteGateways') ? peering.remotePeeringUseRemoteGateways : false
+  }
+}]
 
 @description('The resource ID of the virtual network')
 output id string = vnet.id
