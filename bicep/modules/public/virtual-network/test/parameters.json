@@ -8,11 +8,8 @@
       "hubLocation": {
         "value": "southcentralus"
       },
-      "spoke1Location": {
-        "value": "eastus2"
-      },
-      "spoke2Location": {
-        "value": "westus"
+      "spokeLocation": {
+        "value": "centralus"
       }
     }
   }
