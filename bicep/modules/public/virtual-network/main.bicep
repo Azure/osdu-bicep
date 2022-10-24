@@ -269,4 +269,4 @@ output name string = vnet.name
 output subnetNames array = [for subnet in subnets: subnet.name]
 
 @description('The resource IDs of the deployed subnets')
-output subnetIds array = [for subnet in subnets: az.resourceId('Microsoft.Network/virtualNetworks/subnets', resourceName, subnet.name)]
+output subnetIds array = [for subnet in subnets: az.resourceId('Microsoft.Network/virtualNetworks/subnets', name, subnet.name)]
