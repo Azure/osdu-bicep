@@ -20,7 +20,5 @@ jobs:
       - name: Check spelling of markdown files
         uses: crate-ci/typos@master
         with:
-          files:
-            - "*.md"
-            - "docs/*.md"
+          files: ./**/*.md
           config: ./.github/workflows_dep/_typos.toml
