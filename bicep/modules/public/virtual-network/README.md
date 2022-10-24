@@ -42,6 +42,7 @@ This module deploys a virtual network.
 ## Examples
 
 ### Example 1
+
 A simple network with a role assignment.
 
 ```bicep
@@ -75,8 +76,8 @@ module vnet 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.1'
 ```
 
 ### Example 2
-A hub spoke network sample.
 
+A hub spoke network sample.
 
 ```bicep
 @description('Hub Network Location.')
