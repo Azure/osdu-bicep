@@ -37,6 +37,7 @@ This module deploys an Azure Storage Account.
 ## Examples
 
 ### Example 1
+
 A simple standard storage account.
 
 ```bicep
@@ -51,6 +52,7 @@ module storage '../main.bicep' = {
 ```
 
 ### Example 2
+
 A storage account with Private IP Links enabled, diagnostics enabled with a role assignment.
 
 ```bicep

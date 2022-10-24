@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "3958400008463873374"
+      "templateHash": "1439788639641457906"
     }
   },
   "parameters": {
@@ -113,10 +113,14 @@
     "logsToEnable": {
       "type": "array",
       "defaultValue": [
-        "VMProtectionAlerts"
+        "StorageRead",
+        "StorageWrite",
+        "StorageDelete"
       ],
       "allowedValues": [
-        "VMProtectionAlerts"
+        "StorageRead",
+        "StorageWrite",
+        "StorageDelete"
       ],
       "metadata": {
         "description": "Optional. The name of logs that will be streamed."
@@ -219,8 +223,8 @@
       "condition": "[or(or(or(not(empty(parameters('diagnosticStorageAccountId'))), not(empty(parameters('diagnosticWorkspaceId')))), not(empty(parameters('diagnosticEventHubAuthorizationRuleId')))), not(empty(parameters('diagnosticEventHubName'))))]",
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2021-05-01-preview",
-      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]",
-      "name": "vnet-diagnostics",
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}/blobServices/{1}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')), 'default')]",
+      "name": "storage-diagnostics",
       "properties": {
         "storageAccountId": "[if(not(empty(parameters('diagnosticStorageAccountId'))), parameters('diagnosticStorageAccountId'), null())]",
         "workspaceId": "[if(not(empty(parameters('diagnosticWorkspaceId'))), parameters('diagnosticWorkspaceId'), null())]",
