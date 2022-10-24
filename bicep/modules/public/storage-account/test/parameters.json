@@ -5,9 +5,6 @@
     "template": "../main.bicep"
   },
   "parameters": {
-    "location": {
-      "value": "southcentralus"
-    },
     "resourceName": {
       "value": "osdu"
     }

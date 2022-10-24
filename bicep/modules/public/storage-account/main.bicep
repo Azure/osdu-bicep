@@ -27,6 +27,13 @@ param tags object = {}
 ])
 param sku string = 'Standard_LRS'
 
+@description('Specifies the storage account access tier.')
+@allowed([
+  'Cool'
+  'Hot'
+])
+param accessTier string = 'Hot'
+
 @description('Optional. Array of objects that describe RBAC permissions, format { roleDefinitionResourceId (string), principalId (string), principalType (enum), enabled (bool) }. Ref: https://docs.microsoft.com/en-us/azure/templates/microsoft.authorization/roleassignments?tabs=bicep')
 param roleAssignments array = [
   /* example
@@ -59,10 +66,14 @@ param diagnosticLogsRetentionInDays int = 365
 
 @description('Optional. The name of logs that will be streamed.')
 @allowed([
-  'VMProtectionAlerts'
+  'StorageRead'
+  'StorageWrite'
+  'StorageDelete'
 ])
 param logsToEnable array = [
-  'VMProtectionAlerts'
+  'StorageRead'
+  'StorageWrite'
+  'StorageDelete'
 ]
 
 @description('Optional. The name of metrics that will be streamed.')
@@ -106,7 +117,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   }
   kind: 'StorageV2'
   properties: {
-    accessTier: 'Hot'
+    accessTier: accessTier
 
     networkAcls: enablePrivateLink ? {
       bypass: 'AzureServices'
@@ -137,9 +148,14 @@ module storage_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in
 }]
 
 // Hook up Diagnostics
+resource blob 'Microsoft.Storage/storageAccounts/blobServices@2021-09-01' existing = {
+  name:'default'
+  parent:storage
+}
+
 resource storage_diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(diagnosticStorageAccountId) || !empty(diagnosticWorkspaceId) || !empty(diagnosticEventHubAuthorizationRuleId) || !empty(diagnosticEventHubName)) {
-  name: 'vnet-diagnostics'
-  scope: storage
+  name: 'storage-diagnostics'
+  scope: blob
   properties: {
     storageAccountId: !empty(diagnosticStorageAccountId) ? diagnosticStorageAccountId : null
     workspaceId: !empty(diagnosticWorkspaceId) ? diagnosticWorkspaceId : null
@@ -167,7 +183,7 @@ param privateLinkSettings object = {
 var enablePrivateLink = privateLinkSettings.vnetId != '1' && privateLinkSettings.subnetId != '1'
 
 
-@description('Specifies the name of the private link to the Azure Container Registry.')
+@description('Specifies the name of the private link to the Resource.')
 param privateEndpointName string = 'storagePrivateEndpoint'
 
 var publicDNSZoneForwarder = 'blob.${environment().suffixes.storage}'
