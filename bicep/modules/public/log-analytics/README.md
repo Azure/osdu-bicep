@@ -28,16 +28,14 @@ This module deploys a log analytics workspace.
 | :--- | :----: | :-------------------------------- |
 | id   | string | The resource ID of the workspace. |
 
-## Example
+## Examples
+
+### Example 1
 
 ```bicep
-module logAnalytics 'br:osdu-bicep.azurecr.io/bicep/modules/public/log-analytics:1.0.1' = {
-  name: 'log_analytics'
-  params: {
-    resourceName: 'log-${uniqueString(resourceGroup().id)}'
-    location: location
-    sku: 'PerGB2018'
-    retentionInDays: 30
-  }
-}
+```
+
+### Example 2
+
+```bicep
 ```
