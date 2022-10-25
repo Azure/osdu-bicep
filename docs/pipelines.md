@@ -62,7 +62,7 @@ It is important to note that to ensure less mistakes if `brm generate` were to c
 
 #### Module Release
 
-On the merge of a Pull Request to the main branch a Release is run which will detect the module changed, properly apply a tag for the version of the module and then push the module into the `osdubicep` container registry where the modules are publically available.
+On the merge of a Pull Request to the main branch a Release is run which will detect the module changed, properly apply a tag for the version of the module and then push the module into the `osdubicep` container registry where the modules are publicly available.
 
 #### Module List
 
