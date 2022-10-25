@@ -15,16 +15,14 @@ The guiding principal we have with this project is to focus on the the _downstre
 
 Below is a table containing all published modules. Each version badge shows the latest version of the corresponding module. You may click on a version badge to check all available versions for a module.
 
-| Module | Version | Docs |
-|:---|:---|:---|
+| Module                         | Version                                                                                                                                                           | Docs                                                                                                                                                                                                                              |
+| :----------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | `public/user-managed-identity` | <a href="https://github.com/azure/osdu-bicep/releases/tag/public/user-managed-identity/1.0.1"><image src="https://img.shields.io/badge/osdubicep-1.0.1-blue"></a> | [🦾 Code](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/user-managed-identity/main.bicep) ｜ [📃 Readme](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/user-managed-identity/README.md) | # OSDU Bicep |
-| `public/log-analytics` | <a href="https://github.com/azure/osdu-bicep/releases/tag/public/log-analytics/1.0.1"><image src="https://img.shields.io/badge/osdubicep-1.0.1-blue"></a> | [🦾 Code](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/log-analytics/main.bicep) ｜ [📃 Readme](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/log-analytics/README.md) | # OSDU Bicep |
-| `public/virtual-network` | <a href="https://github.com/azure/osdu-bicep/releases/tag/public/virtual-network/1.0.2"><image src="https://img.shields.io/badge/osdubicep-1.0.2-blue"></a> | [🦾 Code](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/virtual-network/main.bicep) ｜ [📃 Readme](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/virtual-network/README.md) | # OSDU Bicep |
-| `public/storage-account` | <a href="https://github.com/azure/osdu-bicep/releases/tag/public/storage-account/1.0.1"><image src="https://img.shields.io/badge/osdubicep-1.0.1-blue"></a> | [🦾 Code](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/storage-account/main.bicep) ｜ [📃 Readme](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/storage-account/README.md) | # OSDU Bicep |
-
+| `public/log-analytics`         | <a href="https://github.com/azure/osdu-bicep/releases/tag/public/log-analytics/1.0.1"><image src="https://img.shields.io/badge/osdubicep-1.0.1-blue"></a>         | [🦾 Code](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/log-analytics/main.bicep) ｜ [📃 Readme](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/log-analytics/README.md)                 | # OSDU Bicep |
+| `public/virtual-network`       | <a href="https://github.com/azure/osdu-bicep/releases/tag/public/virtual-network/1.0.2"><image src="https://img.shields.io/badge/osdubicep-1.0.2-blue"></a>       | [🦾 Code](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/virtual-network/main.bicep) ｜ [📃 Readme](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/virtual-network/README.md)             | # OSDU Bicep |
+| `public/storage-account`       | <a href="https://github.com/azure/osdu-bicep/releases/tag/public/storage-account/1.0.1"><image src="https://img.shields.io/badge/osdubicep-1.0.1-blue"></a>       | [🦾 Code](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/storage-account/main.bicep) ｜ [📃 Readme](https://github.com/azure/osdu-bicep/blob/main/bicep/modules/public/storage-account/README.md)             | # OSDU Bicep |
 
 <!-- Begin Module Table -->
-
 
 <!-- End Module Table -->
 
