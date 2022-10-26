@@ -1,0 +1,462 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.10.61.36676",
+      "templateHash": "118500238600629697"
+    }
+  },
+  "parameters": {
+    "resourceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Used to name all resources"
+      },
+      "maxLength": 20,
+      "minLength": 3
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Resource Location."
+      }
+    },
+    "enableDeleteLock": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Enable lock to prevent accidental deletion"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags."
+      }
+    },
+    "sku": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "metadata": {
+        "description": "Key Vault SKU."
+      }
+    },
+    "accessPolicies": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Specify Access Policies to Enable (Optional)."
+      }
+    },
+    "softDeleteRetentionInDays": {
+      "type": "int",
+      "defaultValue": 7,
+      "maxValue": 14,
+      "minValue": 7,
+      "metadata": {
+        "description": "Key Vault Retention Days."
+      }
+    },
+    "secretsObject": {
+      "type": "secureObject",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Specifies all secrets {\"secretName\":\"\",\"secretValue\":\"\"} wrapped in a secure object."
+      }
+    },
+    "roleAssignments": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional. Array of objects that describe RBAC permissions, format { roleDefinitionResourceId (string), principalId (string), principalType (enum), enabled (bool) }. Ref: https://docs.microsoft.com/en-us/azure/templates/microsoft.authorization/roleassignments?tabs=bicep"
+      }
+    },
+    "diagnosticWorkspaceId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Resource ID of the diagnostic log analytics workspace."
+      }
+    },
+    "diagnosticStorageAccountId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Resource ID of the diagnostic storage account."
+      }
+    },
+    "diagnosticEventHubAuthorizationRuleId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Resource ID of the diagnostic event hub authorization rule for the Event Hubs namespace in which the event hub should be created or streamed to."
+      }
+    },
+    "diagnosticEventHubName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Name of the diagnostic event hub within the namespace to which logs are streamed. Without this, an event hub is created for each log category."
+      }
+    },
+    "diagnosticLogsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 365,
+      "maxValue": 365,
+      "minValue": 0,
+      "metadata": {
+        "description": "Optional. Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely."
+      }
+    },
+    "logsToEnable": {
+      "type": "array",
+      "defaultValue": [
+        "AuditEvent",
+        "AzurePolicyEvaluationDetails"
+      ],
+      "allowedValues": [
+        "AuditEvent",
+        "AzurePolicyEvaluationDetails"
+      ],
+      "metadata": {
+        "description": "Optional. The name of logs that will be streamed."
+      }
+    },
+    "metricsToEnable": {
+      "type": "array",
+      "defaultValue": [
+        "AllMetrics"
+      ],
+      "allowedValues": [
+        "AllMetrics"
+      ],
+      "metadata": {
+        "description": "Optional. The name of metrics that will be streamed."
+      }
+    },
+    "privateLinkSettings": {
+      "type": "object",
+      "defaultValue": {
+        "subnetId": "1",
+        "vnetId": "1"
+      },
+      "metadata": {
+        "description": "Settings Required to Enable Private Link"
+      }
+    },
+    "privateEndpointName": {
+      "type": "string",
+      "defaultValue": "kvPrivateEndpoint",
+      "metadata": {
+        "description": "Specifies the name of the private link to the Azure Container Registry."
+      }
+    }
+  },
+  "variables": {
+    "copy": [
+      {
+        "name": "diagnosticsLogs",
+        "count": "[length(parameters('logsToEnable'))]",
+        "input": {
+          "category": "[parameters('logsToEnable')[copyIndex('diagnosticsLogs')]]",
+          "enabled": true,
+          "retentionPolicy": {
+            "enabled": true,
+            "days": "[parameters('diagnosticLogsRetentionInDays')]"
+          }
+        }
+      },
+      {
+        "name": "diagnosticsMetrics",
+        "count": "[length(parameters('metricsToEnable'))]",
+        "input": {
+          "category": "[parameters('metricsToEnable')[copyIndex('diagnosticsMetrics')]]",
+          "timeGrain": null,
+          "enabled": true,
+          "retentionPolicy": {
+            "enabled": true,
+            "days": "[parameters('diagnosticLogsRetentionInDays')]"
+          }
+        }
+      }
+    ],
+    "name": "[format('kv-{0}{1}', replace(parameters('resourceName'), '-', ''), uniqueString(resourceGroup().id, parameters('resourceName')))]",
+    "enableSecrets": "[and(contains(parameters('secretsObject'), 'secrets'), greater(length(parameters('secretsObject').secrets), 0))]",
+    "enablePrivateLink": "[and(not(equals(parameters('privateLinkSettings').vnetId, '1')), not(equals(parameters('privateLinkSettings').subnetId, '1')))]",
+    "privateDNSZoneName": "privatelink.vaultcore.azure.net"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2022-07-01",
+      "name": "[if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name'))]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "properties": {
+        "copy": [
+          {
+            "name": "accessPolicies",
+            "count": "[length(parameters('accessPolicies'))]",
+            "input": {
+              "objectId": "[parameters('accessPolicies')[copyIndex('accessPolicies')].principalId]",
+              "tenantId": "[subscription().tenantId]",
+              "permissions": "[parameters('accessPolicies')[copyIndex('accessPolicies')].permissions]"
+            }
+          }
+        ],
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "family": "A",
+          "name": "[parameters('sku')]"
+        },
+        "softDeleteRetentionInDays": "[parameters('softDeleteRetentionInDays')]",
+        "enabledForDeployment": false,
+        "enabledForDiskEncryption": true,
+        "enabledForTemplateDeployment": true,
+        "enableRbacAuthorization": false,
+        "networkAcls": "[if(variables('enablePrivateLink'), createObject('bypass', 'AzureServices', 'defaultAction', 'Deny'), createObject())]",
+        "publicNetworkAccess": "[if(variables('enablePrivateLink'), 'Disabled', 'Enabled')]"
+      }
+    },
+    {
+      "condition": "[variables('enableSecrets')]",
+      "copy": {
+        "name": "kv_secrets",
+        "count": "[length(parameters('secretsObject').secrets)]"
+      },
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[format('{0}/{1}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')), parameters('secretsObject').secrets[copyIndex()].secretName)]",
+      "properties": {
+        "value": "[parameters('secretsObject').secrets[copyIndex()].secretValue]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    },
+    {
+      "condition": "[parameters('enableDeleteLock')]",
+      "type": "Microsoft.Authorization/locks",
+      "apiVersion": "2017-04-01",
+      "scope": "[format('Microsoft.KeyVault/vaults/{0}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]",
+      "name": "[format('{0}-lock', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]",
+      "properties": {
+        "level": "CanNotDelete"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    },
+    {
+      "condition": "[or(or(or(not(empty(parameters('diagnosticStorageAccountId'))), not(empty(parameters('diagnosticWorkspaceId')))), not(empty(parameters('diagnosticEventHubAuthorizationRuleId')))), not(empty(parameters('diagnosticEventHubName'))))]",
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "apiVersion": "2021-05-01-preview",
+      "scope": "[format('Microsoft.KeyVault/vaults/{0}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]",
+      "name": "keyvault-diagnostics",
+      "properties": {
+        "storageAccountId": "[if(not(empty(parameters('diagnosticStorageAccountId'))), parameters('diagnosticStorageAccountId'), null())]",
+        "workspaceId": "[if(not(empty(parameters('diagnosticWorkspaceId'))), parameters('diagnosticWorkspaceId'), null())]",
+        "eventHubAuthorizationRuleId": "[if(not(empty(parameters('diagnosticEventHubAuthorizationRuleId'))), parameters('diagnosticEventHubAuthorizationRuleId'), null())]",
+        "eventHubName": "[if(not(empty(parameters('diagnosticEventHubName'))), parameters('diagnosticEventHubName'), null())]",
+        "metrics": "[variables('diagnosticsMetrics')]",
+        "logs": "[variables('diagnosticsLogs')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    },
+    {
+      "condition": "[variables('enablePrivateLink')]",
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2021-02-01",
+      "name": "[parameters('privateEndpointName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "subnet": {
+          "id": "[parameters('privateLinkSettings').subnetId]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[parameters('privateEndpointName')]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.KeyVault/vaults', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]",
+              "groupIds": [
+                "vault"
+              ]
+            }
+          }
+        ],
+        "customDnsConfigs": [
+          {
+            "fqdn": "[variables('privateDNSZoneName')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    },
+    {
+      "condition": "[variables('enablePrivateLink')]",
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2020-06-01",
+      "name": "[format('{0}/{1}-link', variables('privateDNSZoneName'), variables('privateDNSZoneName'))]",
+      "location": "global",
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[parameters('privateLinkSettings').vnetId]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDNSZoneName'))]"
+      ]
+    },
+    {
+      "condition": "[variables('enablePrivateLink')]",
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2020-06-01",
+      "name": "[variables('privateDNSZoneName')]",
+      "location": "global"
+    },
+    {
+      "condition": "[variables('enablePrivateLink')]",
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2022-01-01",
+      "name": "[format('{0}/dnsgroupname', parameters('privateEndpointName'))]",
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "config1",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDNSZoneName'))]"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDNSZoneName'))]",
+        "[resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpointName'))]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "keyvault_rbac",
+        "count": "[length(parameters('roleAssignments'))]"
+      },
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('{0}-KV-Rbac-{1}', uniqueString(deployment().name, parameters('location')), copyIndex())]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "description": {
+            "value": "[if(contains(parameters('roleAssignments')[copyIndex()], 'description'), parameters('roleAssignments')[copyIndex()].description, '')]"
+          },
+          "principalIds": {
+            "value": "[parameters('roleAssignments')[copyIndex()].principalIds]"
+          },
+          "roleDefinitionIdOrName": {
+            "value": "[parameters('roleAssignments')[copyIndex()].roleDefinitionIdOrName]"
+          },
+          "principalType": {
+            "value": "[if(contains(parameters('roleAssignments')[copyIndex()], 'principalType'), parameters('roleAssignments')[copyIndex()].principalType, '')]"
+          },
+          "resourceId": {
+            "value": "[resourceId('Microsoft.KeyVault/vaults', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.10.61.36676",
+              "templateHash": "6796773565829422293"
+            }
+          },
+          "parameters": {
+            "description": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "principalIds": {
+              "type": "array"
+            },
+            "principalType": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "roleDefinitionIdOrName": {
+              "type": "string"
+            },
+            "resourceId": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "builtInRoleNames": {
+              "Owner": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+              "Contributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+              "Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+              "Key Vault Administrator": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'a4417e6f-fecd-4de8-b567-7b0420556985')]",
+              "Key Vault Certificates Officer": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f25e0fa2-a7c8-4377-a976-54943a77a395')]",
+              "Key Vault Contributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '14b46e9e-c2b7-41b4-b07b-48a6ebf60603')]",
+              "Key Vault Crypto Officer": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'e147488a-f6f5-4113-8e2d-b22465e65bf6')]",
+              "Key Vault Crypto Service Encryption User": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '')]",
+              "Key Vault Crypto User": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '12338af0-0e69-4776-bea7-57ae8d297424')]",
+              "Key Vault Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '21090545-7ca7-4776-b22c-e363652d74d2')]",
+              "Key Vault Secrets Officer": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')]",
+              "Key Vault Secrets User": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')]"
+            }
+          },
+          "resources": [
+            {
+              "copy": {
+                "name": "roleAssignment",
+                "count": "[length(parameters('principalIds'))]"
+              },
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.KeyVault/vaults/{0}', last(split(parameters('resourceId'), '/')))]",
+              "name": "[guid(last(split(parameters('resourceId'), '/')), parameters('principalIds')[copyIndex()], parameters('roleDefinitionIdOrName'))]",
+              "properties": {
+                "description": "[parameters('description')]",
+                "roleDefinitionId": "[if(contains(variables('builtInRoleNames'), parameters('roleDefinitionIdOrName')), variables('builtInRoleNames')[parameters('roleDefinitionIdOrName')], parameters('roleDefinitionIdOrName'))]",
+                "principalId": "[parameters('principalIds')[copyIndex()]]",
+                "principalType": "[if(not(empty(parameters('principalType'))), parameters('principalType'), null())]"
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "name": {
+      "type": "string",
+      "value": "[if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name'))]",
+      "metadata": {
+        "description": "The name of the azure keyvault."
+      }
+    },
+    "id": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.KeyVault/vaults', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]",
+      "metadata": {
+        "description": "The resourceId of the azure keyvault."
+      }
+    }
+  }
+}
