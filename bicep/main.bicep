@@ -245,6 +245,9 @@ module stgModule 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
   params: {
     resourceName: controlPlane
     location: location
+    tags: {
+      layer: 'Control Plane'
+    }
     sku: storageAccountType
     tables: [
       'config'
