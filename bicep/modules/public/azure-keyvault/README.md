@@ -27,7 +27,6 @@ This module deploys a key vault.
 | `logsToEnable`                          | `array`        | No       | Optional. The name of logs that will be streamed.                                                                                                                                                                                                                             |
 | `metricsToEnable`                       | `array`        | No       | Optional. The name of metrics that will be streamed.                                                                                                                                                                                                                          |
 | `privateLinkSettings`                   | `object`       | No       | Settings Required to Enable Private Link                                                                                                                                                                                                                                      |
-| `privateEndpointName`                   | `string`       | No       | Specifies the name of the private link to the Azure Container Registry.                                                                                                                                                                                                       |
 
 ## Outputs
 
