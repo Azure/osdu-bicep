@@ -27,7 +27,6 @@ This module deploys a key vault.
 | `logsToEnable`                          | `array`        | No       | Optional. The name of logs that will be streamed.                                                                                                                                                                                                                             |
 | `metricsToEnable`                       | `array`        | No       | Optional. The name of metrics that will be streamed.                                                                                                                                                                                                                          |
 | `privateLinkSettings`                   | `object`       | No       | Settings Required to Enable Private Link                                                                                                                                                                                                                                      |
-| `privateEndpointName`                   | `string`       | No       | Specifies the name of the private link to the Azure Container Registry.                                                                                                                                                                                                       |
 
 ## Outputs
 
@@ -41,7 +40,7 @@ This module deploys a key vault.
 ### Example 1
 
 ```bicep
-module kv 'br:osdubicep.azurecr.io/bicep/modules/public/keyvault:1.0.1' = {
+module kv 'br:osdubicep.azurecr.io/bicep/modules/public/keyvault:1.0.2' = {
   name: 'azure_keyvault'
   params: {
     resourceName: 'acr${unique(resourceGroup().name)}'
@@ -54,7 +53,7 @@ module kv 'br:osdubicep.azurecr.io/bicep/modules/public/keyvault:1.0.1' = {
 ### Example 2
 
 ```bicep
-module kv 'br:osdubicep.azurecr.io/bicep/modules/public/keyvault:1.0.1' = {
+module kv 'br:osdubicep.azurecr.io/bicep/modules/public/keyvault:1.0.2' = {
   name: 'azure_keyvault'
   params: {
     resourceName: 'acr${unique(resourceGroup().name)}'
