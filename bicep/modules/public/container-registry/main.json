@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "18038778095988917829"
+      "templateHash": "15869021129770977018"
     }
   },
   "parameters": {
@@ -136,13 +136,6 @@
       "metadata": {
         "description": "Settings Required to Enable Private Link"
       }
-    },
-    "privateEndpointName": {
-      "type": "string",
-      "defaultValue": "acrPrivateEndpoint",
-      "metadata": {
-        "description": "Specifies the name of the private link to the Azure Container Registry."
-      }
     }
   },
   "variables": {
@@ -175,6 +168,7 @@
     ],
     "name": "[format('acr{0}{1}', replace(parameters('resourceName'), '-', ''), uniqueString(resourceGroup().id, parameters('resourceName')))]",
     "enablePrivateLink": "[and(not(equals(parameters('privateLinkSettings').vnetId, '1')), not(equals(parameters('privateLinkSettings').subnetId, '1')))]",
+    "privateEndpointName": "[format('{0}-PrivateEndpoint', variables('name'))]",
     "publicDNSZoneForwarder": "[if(equals(toLower(environment().name), 'azureusgovernment'), 'azurecr.us', 'azurecr.io')]",
     "privateDnsZoneName": "[format('privatelink.{0}', variables('publicDNSZoneForwarder'))]"
   },
@@ -239,12 +233,12 @@
       "condition": "[and(equals(parameters('sku'), 'Premium'), variables('enablePrivateLink'))]",
       "type": "Microsoft.Network/privateEndpoints",
       "apiVersion": "2020-07-01",
-      "name": "[parameters('privateEndpointName')]",
+      "name": "[variables('privateEndpointName')]",
       "location": "[parameters('location')]",
       "properties": {
         "privateLinkServiceConnections": [
           {
-            "name": "[parameters('privateEndpointName')]",
+            "name": "[variables('privateEndpointName')]",
             "properties": {
               "privateLinkServiceId": "[resourceId('Microsoft.ContainerRegistry/registries', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]",
               "groupIds": [
@@ -265,7 +259,7 @@
       "condition": "[and(equals(parameters('sku'), 'Premium'), variables('enablePrivateLink'))]",
       "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
       "apiVersion": "2020-06-01",
-      "name": "[format('{0}/dnsgroupname', parameters('privateEndpointName'))]",
+      "name": "[format('{0}/dnsgroupname', variables('privateEndpointName'))]",
       "properties": {
         "privateDnsZoneConfigs": [
           {
@@ -278,7 +272,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]",
-        "[resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpointName'))]"
+        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointName'))]"
       ]
     },
     {
@@ -304,7 +298,7 @@
       },
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
-      "name": "[format('{0}-ACR-Rbac-{1}', uniqueString(deployment().name, parameters('location')), copyIndex())]",
+      "name": "[format('{0}-rbac-{1}', deployment().name, copyIndex())]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
