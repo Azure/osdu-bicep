@@ -46,7 +46,7 @@ This module deploys a virtual network.
 A simple network with a role assignment.
 
 ```bicep
-module example 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.1' = {
+module example 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.2' = {
   name: 'azure_vnet'
   params: {
     resourceName: `vnet-${unique(resourceGroup().name)}'
@@ -80,7 +80,7 @@ module example 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0
 A hub spoke network sample.
 
 ```bicep
-module hub_vnet 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.1' = {
+module hub_vnet 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.2' = {
   name: 'azure_vnet_hub'
   params: {
     resourceName: 'hub'
