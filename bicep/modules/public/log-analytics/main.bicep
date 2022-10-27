@@ -65,9 +65,8 @@ param diagnosticStorageAccountName string = ''
 @description('Storage account resource group. Only required if enableDiagnostics is set to true.')
 param diagnosticStorageAccountResourceGroup string = ''
 
-// Define Variables
+var name = 'log-${replace(resourceName, '-', '')}${uniqueString(resourceGroup().id, resourceName)}'
 var diagnosticsName = '${logAnalyticsWorkspace.name}-dgs'
-var name = 'log-${uniqueString(resourceGroup().id, resourceName)}'
 
 // Create a Log Analytics Workspace
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {

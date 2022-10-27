@@ -31,7 +31,7 @@ This module deploys a log analytics workspace.
 ## Examples
 
 ```bicep
-module example 'br:osdubicep.azurecr.io/bicep/modules/public/log-analytics:1.0.1' = {
+module example 'br:osdubicep.azurecr.io/bicep/modules/public/log-analytics:1.0.2' = {
   name: 'log_analytics'
   params: {
     resourceName: `log-${unique(resourceGroup().name)}'
