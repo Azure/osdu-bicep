@@ -25,7 +25,7 @@ var controlPlane  = 'ctlplane'
 
 // Create a Managed User Identity for the Cluster
 module clusterIdentity 'br:osdubicep.azurecr.io/public/user-managed-identity:1.0.1' = {
-  name: 'user_identity_cluster'
+  name: '${controlPlane}-user-managed-identity'
   params: {
     resourceName: controlPlane
     location: location
@@ -45,8 +45,8 @@ module clusterIdentity 'br:osdubicep.azurecr.io/public/user-managed-identity:1.0
 |__|  |__|  \______/  |__| \__| |__|     |__|      \______/  | _| `._____||__| |__| \__|  \______|                                                                                                    
 */
 
-module logAnalytics 'br:osdubicep.azurecr.io/public/log-analytics:1.0.1' = {
-  name: 'log_analytics'
+module logAnalytics 'br:osdubicep.azurecr.io/public/log-analytics:1.0.2' = {
+  name: '${controlPlane}-log-analytics'
   params: {
     resourceName: controlPlane
     location: location
@@ -99,7 +99,7 @@ var subnetId = '${vnetId[virtualNetworkNewOrExisting]}/subnets/${subnetName}'
 
 // Create Virtual Network (If Not BYO)
 module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.2' = if (virtualNetworkNewOrExisting == 'new') {
-  name: 'azure_vnet'
+  name: '${controlPlane}-virtual-network'
   params: {
     resourceName: virtualNetworkName
     location: location
@@ -156,7 +156,7 @@ module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.2' = if (virt
 */
 
 module keyvault 'br:osdubicep.azurecr.io/public/azure-keyvault:1.0.1' = {
-  name: 'azure_keyvault'
+  name: '${controlPlane}-azure-keyvault'
   params: {
     resourceName: controlPlane
     location: location
@@ -199,7 +199,7 @@ module keyvault 'br:osdubicep.azurecr.io/public/azure-keyvault:1.0.1' = {
 */
 
 module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.1' = {
-  name: 'container_registry'
+  name: '${controlPlane}-container-registry'
   params: {
     resourceName: controlPlane
     location: location
