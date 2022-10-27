@@ -181,7 +181,7 @@ resource lock 'Microsoft.Authorization/locks@2017-04-01' = if (enableDeleteLock)
 
 // Role Assignments
 module keyvault_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
-  name: '${uniqueString(deployment().name, location)}-KV-Rbac-${index}'
+  name: '${deployment().name}-rbac-${index}'
   params: {
     description: contains(roleAssignment, 'description') ? roleAssignment.description : ''
     principalIds: roleAssignment.principalIds
@@ -221,7 +221,7 @@ param privateLinkSettings object = {
 var enablePrivateLink = privateLinkSettings.vnetId != '1' && privateLinkSettings.subnetId != '1'
 
 @description('Specifies the name of the private link to the Azure Container Registry.')
-param privateEndpointName string = 'kvPrivateEndpoint'
+var privateEndpointName = '${name}-PrivateEndpoint'
 
 var privateDNSZoneName = 'privatelink.vaultcore.azure.net'
 
