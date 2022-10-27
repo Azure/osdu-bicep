@@ -122,7 +122,7 @@ resource lock 'Microsoft.Authorization/locks@2016-09-01' = if (enableDeleteLock)
 }
 
 module registry_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
-  name: '${uniqueString(deployment().name, location)}-ACR-Rbac-${index}'
+  name: '${deployment().name}-rbac-${index}'
   params: {
     description: contains(roleAssignment, 'description') ? roleAssignment.description : ''
     principalIds: roleAssignment.principalIds
@@ -162,7 +162,7 @@ param privateLinkSettings object = {
 var enablePrivateLink = privateLinkSettings.vnetId != '1' && privateLinkSettings.subnetId != '1'
 
 @description('Specifies the name of the private link to the Azure Container Registry.')
-param privateEndpointName string = 'acrPrivateEndpoint'
+var privateEndpointName = '${name}-PrivateEndpoint'
 
 var publicDNSZoneForwarder = ((toLower(environment().name) == 'azureusgovernment') ? 'azurecr.us' : 'azurecr.io')
 var privateDnsZoneName = 'privatelink.${publicDNSZoneForwarder}'
