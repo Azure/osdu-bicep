@@ -227,3 +227,41 @@ module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.2' = {
     network
   ]
 }
+
+/*
+     _______.___________.  ______   .______          ___       _______  _______ 
+    /       |           | /  __  \  |   _  \        /   \     /  _____||   ____|
+   |   (----`---|  |----`|  |  |  | |  |_)  |      /  ^  \   |  |  __  |  |__   
+    \   \       |  |     |  |  |  | |      /      /  /_\  \  |  | |_ | |   __|  
+.----)   |      |  |     |  `--'  | |  |\  \----./  _____  \ |  |__| | |  |____ 
+|_______/       |__|      \______/  | _| `._____/__/     \__\ \______| |_______|                                                                 
+*/
+var storageAccountType = 'Standard_LRS'
+
+
+// Create Storage Account
+module stgModule 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
+  name: 'azure_storage'
+  params: {
+    resourceName: controlPlane
+    location: location
+    sku: storageAccountType
+    tables: [
+      'config'
+    ]
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: 'Storage Table Data Reader'
+        principalIds: [
+          clusterIdentity.outputs.principalId
+        ]
+        principalType: 'ServicePrincipal'
+      }
+    ]
+    diagnosticWorkspaceId: logAnalytics.outputs.id
+    privateLinkSettings:{
+      vnetId: network.outputs.id
+      subnetId: network.outputs.subnetIds[0]
+    }
+  }
+}
