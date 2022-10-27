@@ -50,9 +50,65 @@ This module supports the following features.
 ### Example 1
 
 ```bicep
+module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
+  name: 'storage_account'
+  params: {
+    resourceName: resourceName
+    location: location
+    sku: 'Standard_LRS'
+  }
+}
 ```
 
 ### Example 2
 
 ```bicep
+module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
+  name: 'storage_account'
+  params: {
+    resourceName: resourceName
+    location: location
+    sku: 'Standard_LRS'
+
+    containers: [
+      'container1'
+      'another'
+    ]
+
+    tables: [
+      'table1'
+      'another'
+    ]
+
+    // Add Role Assignment
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: 'Storage Blob Data Contributor'
+        principalIds: [
+          identity.outputs.principalId
+        ]
+        principalType: 'ServicePrincipal'
+      }
+    ]
+
+    // Enable Diagnostics
+    diagnosticWorkspaceId: logs.outputs.id
+
+    // Enable Private Link
+    privateLinkSettings:{
+      vnetId: network.outputs.id
+      subnetId: network.outputs.subnetIds[0]
+    }
+
+    // Enable Customer Managed Encryption Key
+    cmekConfiguration: {
+      kvUrl: 'https://akeyvault.vault.azure.net'
+      keyName: 'akey'
+      identityId: '/subscriptions/222222-2222-2222-2222-2222222222/resourcegroups/agroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/aidentity'
+    }
+
+    // Enable Point in Time Restore
+    deleteRetention: 7
+  }
+}
 ```
