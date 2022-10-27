@@ -4,7 +4,7 @@ This module deploys a virtual network.
 
 ## Description
 
-{{ Add detailed description for the module. }}
+This module is responsible for deploying networks.  It has the capability to hookup diagnostics, assign rbac as well as establish network peerings.
 
 ## Parameters
 
@@ -46,7 +46,7 @@ This module deploys a virtual network.
 A simple network with a role assignment.
 
 ```bicep
-module example 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.2' = {
+module example 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.4' = {
   name: 'azure_vnet'
   params: {
     resourceName: `vnet-${unique(resourceGroup().name)}'
@@ -80,7 +80,7 @@ module example 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0
 A hub spoke network sample.
 
 ```bicep
-module hub_vnet 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.2' = {
+module hub_vnet 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.4' = {
   name: 'azure_vnet_hub'
   params: {
     resourceName: 'hub'

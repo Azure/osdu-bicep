@@ -217,7 +217,7 @@ resource vnetDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-previ
 }
 
 module virtualNetwork_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
-  name: '${name}-rbac-${index}'
+  name: '${deployment().name}-rbac-${index}'
   params: {
     description: contains(roleAssignment, 'description') ? roleAssignment.description : ''
     principalIds: roleAssignment.principalIds
@@ -230,7 +230,7 @@ module virtualNetwork_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, in
 
 // Local to Remote peering
 module virtualNetwork_peering_local '.bicep/peering.bicep' = [for (peering, index) in virtualNetworkPeerings: {
-  name: '${name}-peering-local-${index}'
+  name: '${deployment().name}-peering-local-${index}'
   params: {
     localVnetName: vnet.name
     remoteVirtualNetworkId: peering.remoteVirtualNetworkId
@@ -245,7 +245,7 @@ module virtualNetwork_peering_local '.bicep/peering.bicep' = [for (peering, inde
 
 // Remote to local peering (reverse)
 module virtualNetwork_peering_remote '.bicep/peering.bicep' = [for (peering, index) in virtualNetworkPeerings: if (contains(peering, 'remotePeeringEnabled') ? peering.remotePeeringEnabled == true : false) {
-  name: '${name}-peering-remote-${index}'
+  name: '${deployment().name}-peering-remote-${index}'
   scope: resourceGroup(split(peering.remoteVirtualNetworkId, '/')[2], split(peering.remoteVirtualNetworkId, '/')[4])
   params: {
     localVnetName: last(split(peering.remoteVirtualNetworkId, '/'))
