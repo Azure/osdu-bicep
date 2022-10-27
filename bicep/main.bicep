@@ -155,7 +155,7 @@ module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = if (virt
 |__|\__\ |_______|   |__|         \__/ /__/     \__\ \______/  |_______|    |__|                                                                     
 */
 
-module keyvault 'br:osdubicep.azurecr.io/public/azure-keyvault:1.0.1' = {
+module keyvault 'br:osdubicep.azurecr.io/public/azure-keyvault:1.0.2' = {
   name: '${controlPlane}-azure-keyvault'
   params: {
     resourceName: controlPlane
