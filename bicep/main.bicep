@@ -198,7 +198,7 @@ module keyvault 'br:osdubicep.azurecr.io/public/azure-keyvault:1.0.1' = {
 | _| `._____||_______| \______| |__| |_______/       |__|     | _| `._____|   |__|                                                                                                                              
 */
 
-module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.1' = {
+module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.2' = {
   name: '${controlPlane}-container-registry'
   params: {
     resourceName: controlPlane
