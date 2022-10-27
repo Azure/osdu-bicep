@@ -98,7 +98,7 @@ var vnetId = {
 var subnetId = '${vnetId[virtualNetworkNewOrExisting]}/subnets/${subnetName}'
 
 // Create Virtual Network (If Not BYO)
-module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.3' = if (virtualNetworkNewOrExisting == 'new') {
+module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = if (virtualNetworkNewOrExisting == 'new') {
   name: '${controlPlane}-virtual-network'
   params: {
     resourceName: virtualNetworkName
