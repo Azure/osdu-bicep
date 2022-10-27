@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "6190501009881558876"
+      "templateHash": "5307936118773594977"
     }
   },
   "parameters": {
@@ -321,7 +321,7 @@
       },
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
-      "name": "[format('{0}-rbac-{1}', variables('name'), copyIndex())]",
+      "name": "[format('{0}-rbac-{1}', deployment().name, copyIndex())]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -438,7 +438,7 @@
       },
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
-      "name": "[format('{0}-peering-local-{1}', variables('name'), copyIndex())]",
+      "name": "[format('{0}-peering-local-{1}', deployment().name, copyIndex())]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -590,7 +590,7 @@
       },
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
-      "name": "[format('{0}-peering-remote-{1}', variables('name'), copyIndex())]",
+      "name": "[format('{0}-peering-remote-{1}', deployment().name, copyIndex())]",
       "subscriptionId": "[split(parameters('virtualNetworkPeerings')[copyIndex()].remoteVirtualNetworkId, '/')[2]]",
       "resourceGroup": "[split(parameters('virtualNetworkPeerings')[copyIndex()].remoteVirtualNetworkId, '/')[4]]",
       "properties": {
