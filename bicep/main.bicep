@@ -116,6 +116,17 @@ module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.2' = if (virt
         addressPrefix: subnetAddressPrefix
         privateEndpointNetworkPolicies: 'Disabled'
         privateLinkServiceNetworkPolicies: 'Enabled'
+        serviceEndpoints: [
+          {
+            service: 'Microsoft.Storage'
+          }
+          {
+            service: 'Microsoft.KeyVault'
+          }
+          {
+            service: 'Microsoft.ContainerRegistry'
+          }
+        ]
       }
     ]
     roleAssignments: [
