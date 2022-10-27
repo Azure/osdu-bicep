@@ -8,6 +8,7 @@ param resourceName string
 @description('Registry Location.')
 param location string = resourceGroup().location
 
+
 //  Module --> Create Storage Account
 module storage '../main.bicep' = {
   name: 'storage_account'
