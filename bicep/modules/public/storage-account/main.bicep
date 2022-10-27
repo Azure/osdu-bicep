@@ -34,6 +34,23 @@ param sku string = 'Standard_LRS'
 ])
 param accessTier string = 'Hot'
 
+
+@description('Optional. Array of Storage Containers to be created.')
+param containers array = [
+  /* example
+  'one'
+  'two'
+  */
+]
+
+@description('Optional. Array of Storage Tables to be created.')
+param tables array = [
+  /* example
+  'one'
+  'two'
+  */
+]
+
 @description('Optional. Array of objects that describe RBAC permissions, format { roleDefinitionResourceId (string), principalId (string), principalType (enum), enabled (bool) }. Ref: https://docs.microsoft.com/en-us/azure/templates/microsoft.authorization/roleassignments?tabs=bicep')
 param roleAssignments array = [
   /* example
@@ -84,6 +101,20 @@ param metricsToEnable array = [
   'AllMetrics'
 ]
 
+@description('Optional. Customer Managed Encryption Key.')
+param cmekConfiguration object = {
+  kvUrl: ''
+  keyName: ''
+  identityId: ''
+}
+
+@description('Amount of days the soft deleted data is stored and available for recovery. 0 is off.')
+@minValue(0)
+@maxValue(365)
+param deleteRetention int = 0
+
+var enableCMEK = !empty(cmekConfiguration.kvUrl) && !empty(cmekConfiguration.keyName) && !empty(cmekConfiguration.identityId) ? true : false
+
 var name = 'sa${replace(resourceName, '-', '')}${uniqueString(resourceGroup().id, resourceName)}'
 
 var diagnosticsLogs = [for log in logsToEnable: {
@@ -108,7 +139,7 @@ var diagnosticsMetrics = [for metric in metricsToEnable: {
 
 
 // Create Storage Account
-resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: length(name) > 24 ? substring(name, 0, 24) : name
   location: location
   tags: tags
@@ -116,8 +147,36 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
     name: sku
   }
   kind: 'StorageV2'
+
+  identity: enableCMEK ? {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${cmekConfiguration.identityId}': {}
+    }
+  } : json('null')
+
   properties: {
     accessTier: accessTier
+    minimumTlsVersion: 'TLS1_2'
+
+    encryption: enableCMEK ? {
+      identity: {
+        userAssignedIdentity: cmekConfiguration.identityId
+      }
+      services: {
+         blob: {
+           enabled: true
+         }
+         table: {
+            enabled: true
+         }
+      }
+      keySource: 'Microsoft.Keyvault'
+      keyvaultproperties: {
+        keyname: cmekConfiguration.keyName
+        keyvaulturi: cmekConfiguration.kvUrl
+      }
+    } : json('null')
 
     networkAcls: enablePrivateLink ? {
       bypass: 'AzureServices'
@@ -125,6 +184,38 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
     } : {}
   }
 }
+
+resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2021-04-01' = {
+  parent: storage
+  name: 'default'
+  properties: deleteRetention > 0 ? {
+    changeFeed: {
+      enabled: true
+    }
+    restorePolicy: {
+      enabled: true
+      days: 6
+    }
+    isVersioningEnabled: true
+    deleteRetentionPolicy: {
+      enabled: true
+      days: deleteRetention
+    }
+  } : json('null')
+}
+
+resource storage_containers 'Microsoft.Storage/storageAccounts/blobServices/containers@2022-05-01' = [for item in containers: {
+  name: '${storage.name}/default/${item}'
+  properties: {
+    defaultEncryptionScope:      '$account-encryption-key'
+    denyEncryptionScopeOverride: false
+    publicAccess:                'None'
+  }
+}]
+
+resource storage_tables 'Microsoft.Storage/storageAccounts/tableServices/tables@2022-05-01' = [for item in tables: {
+  name: '${storage.name}/default/${item}'
+}]
 
 // Apply Resource Lock
 resource resource_lock 'Microsoft.Authorization/locks@2017-04-01' = if (lock != 'NotSpecified') {
@@ -137,7 +228,7 @@ resource resource_lock 'Microsoft.Authorization/locks@2017-04-01' = if (lock != 
 }
 
 module storage_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
-  name: '${uniqueString(deployment().name, location)}-VNet-Rbac-${index}'
+  name: '${deployment().name}-rbac-${index}'
   params: {
     description: contains(roleAssignment, 'description') ? roleAssignment.description : ''
     principalIds: roleAssignment.principalIds
@@ -147,15 +238,12 @@ module storage_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in
   }
 }]
 
-// Hook up Diagnostics
-resource blob 'Microsoft.Storage/storageAccounts/blobServices@2021-09-01' existing = {
-  name:'default'
-  parent:storage
-}
 
+
+// Hook up Diagnostics
 resource storage_diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(diagnosticStorageAccountId) || !empty(diagnosticWorkspaceId) || !empty(diagnosticEventHubAuthorizationRuleId) || !empty(diagnosticEventHubName)) {
   name: 'storage-diagnostics'
-  scope: blob
+  scope: blobServices
   properties: {
     storageAccountId: !empty(diagnosticStorageAccountId) ? diagnosticStorageAccountId : null
     workspaceId: !empty(diagnosticWorkspaceId) ? diagnosticWorkspaceId : null
@@ -184,7 +272,7 @@ var enablePrivateLink = privateLinkSettings.vnetId != '1' && privateLinkSettings
 
 
 @description('Specifies the name of the private link to the Resource.')
-param privateEndpointName string = 'storagePrivateEndpoint'
+var privateEndpointName = '${name}-PrivateEndpoint'
 
 var publicDNSZoneForwarder = 'blob.${environment().suffixes.storage}'
 var privateDnsZoneName = 'privatelink.${publicDNSZoneForwarder}'

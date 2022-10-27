@@ -4,7 +4,15 @@ This module deploys an Azure Storage Account.
 
 ## Description
 
-{{ Add detailed description for the module. }}
+This module supports the following features.
+
+- Containers
+- Tables
+- Role Assignments
+- Diagnostics
+- Private Link (Secure network)
+- Customer Managed Encryption Keys
+- Point in Time Restore
 
 ## Parameters
 
@@ -16,6 +24,8 @@ This module deploys an Azure Storage Account.
 | `tags`                                  | `object` | No       | Tags.                                                                                                                                                                                                                                                                         |
 | `sku`                                   | `string` | No       | Specifies the storage account sku type.                                                                                                                                                                                                                                       |
 | `accessTier`                            | `string` | No       | Specifies the storage account access tier.                                                                                                                                                                                                                                    |
+| `containers`                            | `array`  | No       | Optional. Array of Storage Containers to be created.                                                                                                                                                                                                                          |
+| `tables`                                | `array`  | No       | Optional. Array of Storage Tables to be created.                                                                                                                                                                                                                              |
 | `roleAssignments`                       | `array`  | No       | Optional. Array of objects that describe RBAC permissions, format { roleDefinitionResourceId (string), principalId (string), principalType (enum), enabled (bool) }. Ref: https://docs.microsoft.com/en-us/azure/templates/microsoft.authorization/roleassignments?tabs=bicep |
 | `diagnosticWorkspaceId`                 | `string` | No       | Optional. Resource ID of the diagnostic log analytics workspace.                                                                                                                                                                                                              |
 | `diagnosticStorageAccountId`            | `string` | No       | Optional. Resource ID of the diagnostic storage account.                                                                                                                                                                                                                      |
@@ -24,8 +34,9 @@ This module deploys an Azure Storage Account.
 | `diagnosticLogsRetentionInDays`         | `int`    | No       | Optional. Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely.                                                                                                                                                                |
 | `logsToEnable`                          | `array`  | No       | Optional. The name of logs that will be streamed.                                                                                                                                                                                                                             |
 | `metricsToEnable`                       | `array`  | No       | Optional. The name of metrics that will be streamed.                                                                                                                                                                                                                          |
+| `cmekConfiguration`                     | `object` | No       | Optional. Customer Managed Encryption Key.                                                                                                                                                                                                                                    |
+| `deleteRetention`                       | `int`    | No       | Amount of days the soft deleted data is stored and available for recovery. 0 is off.                                                                                                                                                                                          |
 | `privateLinkSettings`                   | `object` | No       | Settings Required to Enable Private Link                                                                                                                                                                                                                                      |
-| `privateEndpointName`                   | `string` | No       | Specifies the name of the private link to the Resource.                                                                                                                                                                                                                       |
 
 ## Outputs
 
@@ -38,14 +49,12 @@ This module deploys an Azure Storage Account.
 
 ### Example 1
 
-A simple standard storage account.
-
 ```bicep
-module example '../main.bicep' = {
+module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
   name: 'storage_account'
   params: {
-    resourceName: 'sa${unique(resourceGroup().name)}'
-    location: 'southcentralus'
+    resourceName: resourceName
+    location: location
     sku: 'Standard_LRS'
   }
 }
@@ -53,29 +62,53 @@ module example '../main.bicep' = {
 
 ### Example 2
 
-A storage account with Private IP Links enabled, diagnostics enabled with a role assignment.
-
 ```bicep
-module example '../main.bicep' = {
+module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
   name: 'storage_account'
   params: {
-    resourceName: 'sa${unique(resourceGroup().name)}'
-    location: 'southcentralus'
+    resourceName: resourceName
+    location: location
     sku: 'Standard_LRS'
-    privateLinkSettings:{
-      vnetId: '/subscriptions/222222-2222-2222-2222-2222222222/resourceGroups/osdu-resource-group/providers/Microsoft.Network/virtualNetworks/osdu-vnet'
-      subnetId: '/subscriptions/222222-2222-2222-2222-2222222222/resourceGroups/osdu-resource-group/providers/Microsoft.Network/virtualNetworks/osdu-vnet/subnets/default'
-    }
-    diagnosticWorkspaceId: '/subscriptions/222222-2222-2222-2222-2222222222/resourceGroups/osdu-resource-group/providers/Microsoft.OperationalInsights/workspaces/osdu-logs'
+
+    containers: [
+      'container1'
+      'another'
+    ]
+
+    tables: [
+      'table1'
+      'another'
+    ]
+
+    // Add Role Assignment
     roleAssignments: [
       {
         roleDefinitionIdOrName: 'Storage Blob Data Contributor'
         principalIds: [
-          '222222-2222-2222-2222-2222222222'
+          identity.outputs.principalId
         ]
         principalType: 'ServicePrincipal'
       }
     ]
+
+    // Enable Diagnostics
+    diagnosticWorkspaceId: logs.outputs.id
+
+    // Enable Private Link
+    privateLinkSettings:{
+      vnetId: network.outputs.id
+      subnetId: network.outputs.subnetIds[0]
+    }
+
+    // Enable Customer Managed Encryption Key
+    cmekConfiguration: {
+      kvUrl: 'https://akeyvault.vault.azure.net'
+      keyName: 'akey'
+      identityId: '/subscriptions/222222-2222-2222-2222-2222222222/resourcegroups/agroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/aidentity'
+    }
+
+    // Enable Point in Time Restore
+    deleteRetention: 7
   }
 }
 ```

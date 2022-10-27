@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "1439788639641457906"
+      "templateHash": "15481904701902415279"
     }
   },
   "parameters": {
@@ -64,6 +64,20 @@
       ],
       "metadata": {
         "description": "Specifies the storage account access tier."
+      }
+    },
+    "containers": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional. Array of Storage Containers to be created."
+      }
+    },
+    "tables": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional. Array of Storage Tables to be created."
       }
     },
     "roleAssignments": {
@@ -138,6 +152,26 @@
         "description": "Optional. The name of metrics that will be streamed."
       }
     },
+    "cmekConfiguration": {
+      "type": "object",
+      "defaultValue": {
+        "kvUrl": "",
+        "keyName": "",
+        "identityId": ""
+      },
+      "metadata": {
+        "description": "Optional. Customer Managed Encryption Key."
+      }
+    },
+    "deleteRetention": {
+      "type": "int",
+      "defaultValue": 0,
+      "maxValue": 365,
+      "minValue": 0,
+      "metadata": {
+        "description": "Amount of days the soft deleted data is stored and available for recovery. 0 is off."
+      }
+    },
     "privateLinkSettings": {
       "type": "object",
       "defaultValue": {
@@ -146,13 +180,6 @@
       },
       "metadata": {
         "description": "Settings Required to Enable Private Link"
-      }
-    },
-    "privateEndpointName": {
-      "type": "string",
-      "defaultValue": "storagePrivateEndpoint",
-      "metadata": {
-        "description": "Specifies the name of the private link to the Resource."
       }
     }
   },
@@ -184,15 +211,17 @@
         }
       }
     ],
+    "enableCMEK": "[if(and(and(not(empty(parameters('cmekConfiguration').kvUrl)), not(empty(parameters('cmekConfiguration').keyName))), not(empty(parameters('cmekConfiguration').identityId))), true(), false())]",
     "name": "[format('sa{0}{1}', replace(parameters('resourceName'), '-', ''), uniqueString(resourceGroup().id, parameters('resourceName')))]",
     "enablePrivateLink": "[and(not(equals(parameters('privateLinkSettings').vnetId, '1')), not(equals(parameters('privateLinkSettings').subnetId, '1')))]",
+    "privateEndpointName": "[format('{0}-PrivateEndpoint', variables('name'))]",
     "publicDNSZoneForwarder": "[format('blob.{0}', environment().suffixes.storage)]",
     "privateDnsZoneName": "[format('privatelink.{0}', variables('publicDNSZoneForwarder'))]"
   },
   "resources": [
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2021-04-01",
+      "apiVersion": "2022-05-01",
       "name": "[if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name'))]",
       "location": "[parameters('location')]",
       "tags": "[parameters('tags')]",
@@ -200,10 +229,51 @@
         "name": "[parameters('sku')]"
       },
       "kind": "StorageV2",
+      "identity": "[if(variables('enableCMEK'), createObject('type', 'UserAssigned', 'userAssignedIdentities', createObject(format('{0}', parameters('cmekConfiguration').identityId), createObject())), json('null'))]",
       "properties": {
         "accessTier": "[parameters('accessTier')]",
+        "minimumTlsVersion": "TLS1_2",
+        "encryption": "[if(variables('enableCMEK'), createObject('identity', createObject('userAssignedIdentity', parameters('cmekConfiguration').identityId), 'services', createObject('blob', createObject('enabled', true()), 'table', createObject('enabled', true())), 'keySource', 'Microsoft.Keyvault', 'keyvaultproperties', createObject('keyname', parameters('cmekConfiguration').keyName, 'keyvaulturi', parameters('cmekConfiguration').kvUrl)), json('null'))]",
         "networkAcls": "[if(variables('enablePrivateLink'), createObject('bypass', 'AzureServices', 'defaultAction', 'Deny'), createObject())]"
       }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2021-04-01",
+      "name": "[format('{0}/{1}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')), 'default')]",
+      "properties": "[if(greater(parameters('deleteRetention'), 0), createObject('changeFeed', createObject('enabled', true()), 'restorePolicy', createObject('enabled', true(), 'days', 6), 'isVersioningEnabled', true(), 'deleteRetentionPolicy', createObject('enabled', true(), 'days', parameters('deleteRetention'))), json('null'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "storage_containers",
+        "count": "[length(parameters('containers'))]"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2022-05-01",
+      "name": "[format('{0}/default/{1}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')), parameters('containers')[copyIndex()])]",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "publicAccess": "None"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "storage_tables",
+        "count": "[length(parameters('tables'))]"
+      },
+      "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+      "apiVersion": "2022-05-01",
+      "name": "[format('{0}/default/{1}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')), parameters('tables')[copyIndex()])]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
     },
     {
       "condition": "[not(equals(parameters('lock'), 'NotSpecified'))]",
@@ -234,6 +304,7 @@
         "logs": "[variables('diagnosticsLogs')]"
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')), 'default')]",
         "[resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
       ]
     },
@@ -249,12 +320,12 @@
       "condition": "[variables('enablePrivateLink')]",
       "type": "Microsoft.Network/privateEndpoints",
       "apiVersion": "2022-01-01",
-      "name": "[parameters('privateEndpointName')]",
+      "name": "[variables('privateEndpointName')]",
       "location": "[parameters('location')]",
       "properties": {
         "privateLinkServiceConnections": [
           {
-            "name": "[parameters('privateEndpointName')]",
+            "name": "[variables('privateEndpointName')]",
             "properties": {
               "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]",
               "groupIds": [
@@ -275,7 +346,7 @@
       "condition": "[variables('enablePrivateLink')]",
       "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
       "apiVersion": "2022-01-01",
-      "name": "[format('{0}/dnsgroupname', parameters('privateEndpointName'))]",
+      "name": "[format('{0}/dnsgroupname', variables('privateEndpointName'))]",
       "properties": {
         "privateDnsZoneConfigs": [
           {
@@ -288,7 +359,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]",
-        "[resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpointName'))]"
+        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointName'))]"
       ]
     },
     {
@@ -314,7 +385,7 @@
       },
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
-      "name": "[format('{0}-VNet-Rbac-{1}', uniqueString(deployment().name, parameters('location')), copyIndex())]",
+      "name": "[format('{0}-rbac-{1}', deployment().name, copyIndex())]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
