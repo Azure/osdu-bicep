@@ -7,7 +7,7 @@ permissions:
 on:
   push:
     paths:
-      - "bicep/**/*"
+      - "bicep/main.bicep"
       - "!bicep/modules/**/*"
       - ".github/workflows_dep/parameters.json"
 
@@ -86,6 +86,7 @@ jobs:
 
   Validate:
     runs-on: ubuntu-latest
+    environment: dev
     if: ${{ !github.event.pull_request.head.repo.fork }}
     outputs:
       RESOURCEGROUP: ${{ steps.params.outputs.RESOURCEGROUP}}
