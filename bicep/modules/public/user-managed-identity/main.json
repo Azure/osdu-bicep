@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "8500625770490490811"
+      "templateHash": "16097571853443235895"
     }
   },
   "parameters": {
@@ -83,6 +83,13 @@
       "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))).principalId]",
       "metadata": {
         "description": "The principal id for the managed identity."
+      }
+    },
+    "clientId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))).clientId]",
+      "metadata": {
+        "description": "The client id for the managed identity."
       }
     }
   }

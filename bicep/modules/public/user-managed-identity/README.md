@@ -21,6 +21,7 @@ This module creates a user managed identity with an optional lock.
 | :---------- | :----: | :----------------------------------------- |
 | id          | string | The resource ID of the managed identity.   |
 | principalId | string | The principal id for the managed identity. |
+| clientId    | string | The client id for the managed identity.    |
 
 ## Examples
 
