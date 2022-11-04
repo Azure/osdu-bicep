@@ -1,7 +1,7 @@
 targetScope = 'resourceGroup'
 
-@minLength(3)
-@maxLength(20)
+@minLength(5)
+@maxLength(48)
 @description('Used to name all resources')
 param resourceName string
 
@@ -48,7 +48,7 @@ param roleAssignments array = [
 var name = 'ac-${replace(resourceName, '-', '')}${uniqueString(resourceGroup().id, resourceName)}'
 
 resource configStore 'Microsoft.AppConfiguration/configurationStores@2022-05-01' = {
-  name: name
+  name: length(name) > 50 ? substring(name, 0, 50) : name
   location: location
   sku: {
     name: sku
