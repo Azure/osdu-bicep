@@ -14,6 +14,7 @@ module ac '../main.bicep' = {
   params: {
     resourceName: resourceName
     location: location
+    enableDeleteLock: true
     configObjects: {
       configs: [
         {
@@ -24,3 +25,5 @@ module ac '../main.bicep' = {
     }
   }
 }
+
+
