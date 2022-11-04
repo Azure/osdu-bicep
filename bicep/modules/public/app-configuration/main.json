@@ -5,11 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.12.1.58429",
-<<<<<<< HEAD
       "templateHash": "17493633964549301065"
-=======
-      "templateHash": "6395740757099469568"
->>>>>>> 6a9435543a78f3c8aa5be5583051e1dff31e7f98
     }
   },
   "parameters": {
@@ -204,111 +200,6 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.AppConfiguration/configurationStores', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]"
-      ]
-    },
-    {
-      "condition": "[parameters('enableDeleteLock')]",
-      "type": "Microsoft.Authorization/locks",
-      "apiVersion": "2017-04-01",
-      "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', variables('name'))]",
-      "name": "[format('{0}-lock', variables('name'))]",
-      "properties": {
-        "level": "CanNotDelete"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('name'))]"
-      ]
-    },
-    {
-      "copy": {
-        "name": "configStore_rbac",
-        "count": "[length(parameters('roleAssignments'))]"
-      },
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-10-01",
-      "name": "[format('{0}-rbac-{1}', deployment().name, copyIndex())]",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "description": {
-            "value": "[if(contains(parameters('roleAssignments')[copyIndex()], 'description'), parameters('roleAssignments')[copyIndex()].description, '')]"
-          },
-          "principalIds": {
-            "value": "[parameters('roleAssignments')[copyIndex()].principalIds]"
-          },
-          "roleDefinitionIdOrName": {
-            "value": "[parameters('roleAssignments')[copyIndex()].roleDefinitionIdOrName]"
-          },
-          "principalType": {
-            "value": "[if(contains(parameters('roleAssignments')[copyIndex()], 'principalType'), parameters('roleAssignments')[copyIndex()].principalType, '')]"
-          },
-          "resourceId": {
-            "value": "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('name'))]"
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.12.1.58429",
-              "templateHash": "8194005421457038518"
-            }
-          },
-          "parameters": {
-            "description": {
-              "type": "string",
-              "defaultValue": ""
-            },
-            "principalIds": {
-              "type": "array"
-            },
-            "principalType": {
-              "type": "string",
-              "defaultValue": ""
-            },
-            "roleDefinitionIdOrName": {
-              "type": "string"
-            },
-            "resourceId": {
-              "type": "string"
-            }
-          },
-          "variables": {
-            "builtInRoleNames": {
-              "Owner": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
-              "Contributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-              "Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
-              "App Configuration Data Owner": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5ae67dd6-50cb-40e7-96ff-dc2bfa4b606b')]",
-              "App Configuration Data Reader": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '516239f1-63e1-4d78-a4de-a74fb236a071')]"
-            }
-          },
-          "resources": [
-            {
-              "copy": {
-                "name": "roleAssignment",
-                "count": "[length(parameters('principalIds'))]"
-              },
-              "type": "Microsoft.Authorization/roleAssignments",
-              "apiVersion": "2022-04-01",
-              "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', last(split(parameters('resourceId'), '/')))]",
-              "name": "[guid(last(split(parameters('resourceId'), '/')), parameters('principalIds')[copyIndex()], parameters('roleDefinitionIdOrName'))]",
-              "properties": {
-                "description": "[parameters('description')]",
-                "roleDefinitionId": "[if(contains(variables('builtInRoleNames'), parameters('roleDefinitionIdOrName')), variables('builtInRoleNames')[parameters('roleDefinitionIdOrName')], parameters('roleDefinitionIdOrName'))]",
-                "principalId": "[parameters('principalIds')[copyIndex()]]",
-                "principalType": "[if(not(empty(parameters('principalType'))), parameters('principalType'), null())]"
-              }
-            }
-          ]
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.AppConfiguration/configurationStores', variables('name'))]"
       ]
     }
   ],
