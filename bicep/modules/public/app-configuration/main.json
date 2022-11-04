@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.12.1.58429",
-      "templateHash": "9252668457870344870"
+      "templateHash": "220220304039809162"
     }
   },
   "parameters": {
@@ -45,11 +45,11 @@
         "description": "App Configuration SKU."
       }
     },
-    "configOpbjects": {
-      "type": "secureObject",
+    "configObjects": {
+      "type": "object",
       "defaultValue": {},
       "metadata": {
-        "description": "Specifies all secrets {\"secretName\":\"\",\"secretValue\":\"\"} wrapped in a secure object."
+        "description": "Specifies all configuration values {\"key\":\"\",\"value\":\"\"} wrapped in an object."
       }
     },
     "contentType": {
@@ -61,7 +61,7 @@
     }
   },
   "variables": {
-    "name": "[format('kv-{0}{1}', replace(parameters('resourceName'), '-', ''), uniqueString(resourceGroup().id, parameters('resourceName')))]"
+    "name": "[format('ac-{0}{1}', replace(parameters('resourceName'), '-', ''), uniqueString(resourceGroup().id, parameters('resourceName')))]"
   },
   "resources": [
     {
@@ -77,13 +77,13 @@
     {
       "copy": {
         "name": "configStoreKeyValue",
-        "count": "[length(parameters('configOpbjects').configs)]"
+        "count": "[length(parameters('configObjects').configs)]"
       },
       "type": "Microsoft.AppConfiguration/configurationStores/keyValues",
       "apiVersion": "2022-05-01",
-      "name": "[format('{0}/{1}', variables('name'), parameters('configOpbjects').configs[copyIndex()].key)]",
+      "name": "[format('{0}/{1}', variables('name'), parameters('configObjects').configs[copyIndex()].key)]",
       "properties": {
-        "value": "[parameters('configOpbjects').configs[copyIndex()].value]",
+        "value": "[parameters('configObjects').configs[copyIndex()].value]",
         "contentType": "[parameters('contentType')]"
       },
       "dependsOn": [
