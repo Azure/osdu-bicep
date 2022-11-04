@@ -30,7 +30,7 @@ This module deploys an App Configuration service.
 ### Example 1
 
 ```bicep
-module kv 'br:osdubicep.azurecr.io/bicep/modules/public/app-configuration:1.0.2' = {
+module configStore 'br:osdubicep.azurecr.io/bicep/modules/public/app-configuration:1.0.2' = {
   name: 'azure_app_config'
   params: {
     resourceName: 'ac${unique(resourceGroup().name)}'
@@ -43,7 +43,7 @@ module kv 'br:osdubicep.azurecr.io/bicep/modules/public/app-configuration:1.0.2'
 ### Example 2
 
 ```bicep
-module kv 'br:osdubicep.azurecr.io/bicep/modules/public/app-configuration:1.0.2' = {
+module configStore 'br:osdubicep.azurecr.io/bicep/modules/public/app-configuration:1.0.2' = {
   name: 'azure_app_config'
   params: {
     resourceName: 'ac${unique(resourceGroup().name)}'
