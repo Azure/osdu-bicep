@@ -17,6 +17,7 @@ This module deploys an App Configuration service.
 | `sku`              | `string` | No       | App Configuration SKU.                                                                                                                                                                                                                                                                             |
 | `configObjects`    | `object` | No       | Specifies all configuration values {"key":"","value":""} wrapped in an object.                                                                                                                                                                                                                     |
 | `contentType`      | `string` | No       | Specifies the content type of the key-value resources. For feature flag, the value should be application/vnd.microsoft.appconfig.ff+json;charset=utf-8. For Key Value reference, the value should be application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8. Otherwise, it's optional. |
+| `roleAssignments`  | `array`  | No       | Optional. Array of objects that describe RBAC permissions, format { roleDefinitionResourceId (string), principalId (string), principalType (enum), enabled (bool) }. Ref: https://docs.microsoft.com/en-us/azure/templates/microsoft.authorization/roleassignments?tabs=bicep                      |
 
 ## Outputs
 
