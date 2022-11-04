@@ -17,9 +17,8 @@ param tags object = {}
 @description('App Configuration SKU.')
 param sku string = 'Standard'
 
-@description('Specifies all secrets {"secretName":"","secretValue":""} wrapped in a secure object.')
-@secure()
-param configOpbjects object = {
+@description('Specifies all configuration values {"key":"","value":""} wrapped in an object.')
+param configObjects object = {
   /* example
     configs: [
       {
@@ -33,7 +32,7 @@ param configOpbjects object = {
 @description('Specifies the content type of the key-value resources. For feature flag, the value should be application/vnd.microsoft.appconfig.ff+json;charset=utf-8. For Key Value reference, the value should be application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8. Otherwise, it\'s optional.')
 param contentType string = 'the-content-type'
 
-var name = 'kv-${replace(resourceName, '-', '')}${uniqueString(resourceGroup().id, resourceName)}'
+var name = 'ac-${replace(resourceName, '-', '')}${uniqueString(resourceGroup().id, resourceName)}'
 
 resource configStore 'Microsoft.AppConfiguration/configurationStores@2022-05-01' = {
   name: name
@@ -44,7 +43,7 @@ resource configStore 'Microsoft.AppConfiguration/configurationStores@2022-05-01'
   tags: tags
 }
 
-resource configStoreKeyValue 'Microsoft.AppConfiguration/configurationStores/keyValues@2022-05-01' = [for config in configOpbjects.configs: {
+resource configStoreKeyValue 'Microsoft.AppConfiguration/configurationStores/keyValues@2022-05-01' = [for config in configObjects.configs: {
   parent: configStore
   name: config.key
   properties: {

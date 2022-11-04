@@ -14,6 +14,13 @@ module ac '../main.bicep' = {
   params: {
     resourceName: resourceName
     location: location
-    configOpbjects: { secrets: [] }
+    configObjects: {
+      configs: [
+        {
+          key: 'myKey'
+          value: 'myValue'
+        }
+      ]
+    }
   }
 }
