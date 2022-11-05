@@ -35,6 +35,7 @@ fi
 TENANT_ID=$(echo $AZURE_ACCOUNT |awk '{print $1}')
 AZURE_USER=$(echo $AZURE_ACCOUNT |awk '{print $3}')
 AZURE_USER_ID=$(az ad signed-in-user show --query id -o tsv)
+AZURE_SIBLING_LOCATION=$(az account list-locations --query "[?name == '${AZURE_LOCATION}'].metadata.pairedRegion[0].name" -otsv)
 
 
 ###############################
@@ -65,13 +66,14 @@ function CreateResourceGroup() {
 
   Verify $1 'CreateResourceGroup-ERROR: Argument (RESOURCE_GROUP) not received'
   Verify $2 'CreateResourceGroup-ERROR: Argument (LOCATION) not received'
+  Verify $3 'CreateResourceGroup-ERROR: Argument (SIBLING LOCATION) not received'
 
   local _result=$(az group show --name $1 2>/dev/null)
   if [ "$_result"  == "" ]
     then
       az group create --name $1 \
         --location $2 \
-        --tags CONTACT=$AZURE_USER \
+        --tags CONTACT=$AZURE_USER SIBLING_REGION=$3 \
         -o none
       PrintMessage "  Resource Group Created."
     else
@@ -90,7 +92,7 @@ echo "Template Validation"
 echo "=================================================================="
 
 PrintMessage "Create Resource Group: $RESOURCE_GROUP_NAME"
-CreateResourceGroup $RESOURCE_GROUP_NAME $AZURE_LOCATION
+CreateResourceGroup $RESOURCE_GROUP_NAME $AZURE_LOCATION $AZURE_SIBLING_LOCATION
 
 
 # Validate the ARM template
