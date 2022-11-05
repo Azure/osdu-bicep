@@ -43,13 +43,13 @@ This module is responsible for deploying networks.  It has the capability to hoo
 
 ### Example 1
 
-A simple network with a role assignment.
+A simple network.
 
 ```bicep
-module example 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.4' = {
+module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = {
   name: 'azure_vnet'
   params: {
-    resourceName: `vnet-${unique(resourceGroup().name)}'
+    resourceName: 'vnet-${uniqueString(resourceGroup().id)}'
     location: 'southcentralus'
     addressPrefixes: [
       '192.168.0.0/24'
@@ -62,15 +62,6 @@ module example 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0
         privateLinkServiceNetworkPolicies: 'Enabled'
       }
     ]
-    roleAssignments: [
-      {
-        roleDefinitionIdOrName: 'Reader'
-        principalIds: [
-          '222222-2222-2222-2222-2222222222'
-        ]
-        principalType: 'ServicePrincipal'
-      }
-    ]
   }
 }
 ```
@@ -80,7 +71,7 @@ module example 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0
 A hub spoke network sample.
 
 ```bicep
-module hub_vnet 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.0.4' = {
+module hub_vnet 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = {
   name: 'azure_vnet_hub'
   params: {
     resourceName: 'hub'
@@ -101,6 +92,15 @@ module hub_vnet 'br:osdubicep.azurecr.io/bicep/modules/public/virtual-network:1.
       {
         name: 'AzureFirewallSubnet'
         addressPrefix: '10.0.0.128/26'
+      }
+    ]
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: 'Reader'
+        principalIds: [
+          '222222-2222-2222-2222-2222222222'
+        ]
+        principalType: 'ServicePrincipal'
       }
     ]
   }

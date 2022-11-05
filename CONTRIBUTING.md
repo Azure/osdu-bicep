@@ -70,3 +70,7 @@ Releases are used to capture a tested release (all stages, not just Validation),
 ### Dev Container / Codespaces
 
 A dev container is present in the repo which makes dev and testing bicep and platform simpler.
+
+#### Local Testing using the Dev Container
+
+@danielscholl would love to update this per your guidance...

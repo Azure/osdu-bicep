@@ -4,7 +4,7 @@ This module deploys a log analytics workspace.
 
 ## Description
 
-{{ Add detailed description for the module. }}
+Deploys a log analytics workspace with Container Solution.
 
 ## Parameters
 
@@ -31,10 +31,10 @@ This module deploys a log analytics workspace.
 ## Examples
 
 ```bicep
-module example 'br:osdubicep.azurecr.io/bicep/modules/public/log-analytics:1.0.2' = {
+module logs 'br:osdubicep.azurecr.io/public/log-analytics:1.0.2' = {
   name: 'log_analytics'
   params: {
-    resourceName: `log-${unique(resourceGroup().name)}'
+    resourceName: 'log-${uniqueString(resourceGroup().id)}'
     location: 'southcentralus'
     sku: 'PerGB2018'
     retentionInDays: 30
