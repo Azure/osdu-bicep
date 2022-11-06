@@ -150,3 +150,6 @@ resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' 
 
 @description('The resource ID of the workspace.')
 output id string = logAnalyticsWorkspace.id
+
+@description('The resource name of the workspace.')
+output name string = logAnalyticsWorkspace.name
