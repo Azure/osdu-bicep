@@ -24,9 +24,10 @@ Deploys a log analytics workspace with Container Solution.
 
 ## Outputs
 
-| Name | Type   | Description                       |
-| :--- | :----: | :-------------------------------- |
-| id   | string | The resource ID of the workspace. |
+| Name | Type   | Description                         |
+| :--- | :----: | :---------------------------------- |
+| id   | string | The resource ID of the workspace.   |
+| name | string | The resource name of the workspace. |
 
 ## Examples
 
