@@ -8,6 +8,9 @@ param resourceName string
 @description('Workspace Location.')
 param location string = resourceGroup().location
 
+@description('Tags.')
+param tags object = {}
+
 @description('Sku of the workspace')
 @allowed([
   'PerGB2018'
@@ -26,12 +29,14 @@ param retentionInDays int
 
 @description('Solutions to add to workspace')
 param solutions array = [
-  {
-    name: 'ContainerInsights'
-    product: 'OMSGallery/ContainerInsights'
-    publisher: 'Microsoft'
-    promotionCode: ''
-  }
+  /* Example
+    {
+      name: 'ContainerInsights'
+      product: 'OMSGallery/ContainerInsights'
+      publisher: 'Microsoft'
+      promotionCode: ''
+    }  
+  */
 ]
 
 @allowed([
@@ -72,6 +77,7 @@ var diagnosticsName = '${logAnalyticsWorkspace.name}-dgs'
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   name: length(name) > 63 ? substring(name, 0, 63) : name
   location: location
+  tags: tags
   properties: {
     sku: {
       name: sku
@@ -87,6 +93,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2021-06
 resource logAnalyticsSolutions 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = [for solution in solutions: {
   name: '${solution.name}(${logAnalyticsWorkspace.name})'
   location: location
+  tags: tags
   properties: {
     workspaceResourceId: logAnalyticsWorkspace.id
   }
