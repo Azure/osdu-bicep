@@ -12,6 +12,7 @@ Deploys a log analytics workspace with Container Solution.
 | :-------------------------------------- | :------: | :------: | :--------------------------------------------------------------------------------- |
 | `resourceName`                          | `string` | Yes      | Used to name all resources                                                         |
 | `location`                              | `string` | No       | Workspace Location.                                                                |
+| `tags`                                  | `object` | No       | Tags.                                                                              |
 | `sku`                                   | `string` | Yes      | Sku of the workspace                                                               |
 | `retentionInDays`                       | `int`    | Yes      | The workspace data retention in days, between 30 and 730                           |
 | `solutions`                             | `array`  | No       | Solutions to add to workspace                                                      |

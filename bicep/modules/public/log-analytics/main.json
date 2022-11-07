@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.12.1.58429",
-      "templateHash": "4495412115295772565"
+      "templateHash": "1030027511479435174"
     }
   },
   "parameters": {
@@ -22,6 +22,13 @@
       "defaultValue": "[resourceGroup().location]",
       "metadata": {
         "description": "Workspace Location."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags."
       }
     },
     "sku": {
@@ -48,14 +55,7 @@
     },
     "solutions": {
       "type": "array",
-      "defaultValue": [
-        {
-          "name": "ContainerInsights",
-          "product": "OMSGallery/ContainerInsights",
-          "publisher": "Microsoft",
-          "promotionCode": ""
-        }
-      ],
+      "defaultValue": [],
       "metadata": {
         "description": "Solutions to add to workspace"
       }
@@ -126,6 +126,7 @@
       "apiVersion": "2021-06-01",
       "name": "[if(greater(length(variables('name')), 63), substring(variables('name'), 0, 63), variables('name'))]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
       "properties": {
         "sku": {
           "name": "[parameters('sku')]"
@@ -145,6 +146,7 @@
       "apiVersion": "2015-11-01-preview",
       "name": "[format('{0}({1})', parameters('solutions')[copyIndex()].name, if(greater(length(variables('name')), 63), substring(variables('name'), 0, 63), variables('name')))]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
       "properties": {
         "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', if(greater(length(variables('name')), 63), substring(variables('name'), 0, 63), variables('name')))]"
       },
