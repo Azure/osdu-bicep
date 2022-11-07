@@ -8,11 +8,11 @@ param resourceName string
 @description('Resource Location.')
 param location string = resourceGroup().location
 
-@description('Enable lock to prevent accidental deletion')
-param enableDeleteLock bool = false
-
 @description('Tags.')
 param tags object = {}
+
+@description('Enable lock to prevent accidental deletion')
+param enableDeleteLock bool = false
 
 @description('Key Vault SKU.')
 param sku string = 'Standard'

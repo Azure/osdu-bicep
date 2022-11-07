@@ -8,6 +8,9 @@ param resourceName string
 @description('Resource Location.')
 param location string = resourceGroup().location
 
+@description('Tags.')
+param tags object = {}
+
 @allowed([
   'CanNotDelete'
   'NotSpecified'
@@ -15,9 +18,6 @@ param location string = resourceGroup().location
 ])
 @description('Optional. Specify the type of lock.')
 param lock string = 'NotSpecified'
-
-@description('Tags.')
-param tags object = {}
 
 @description('Specifies the storage account sku type.')
 @allowed([
@@ -170,13 +170,29 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-05-01' = {
          table: {
             enabled: true
          }
+         file: {
+            enabled: true
+         }
       }
       keySource: 'Microsoft.Keyvault'
       keyvaultproperties: {
         keyname: cmekConfiguration.keyName
         keyvaulturi: cmekConfiguration.kvUrl
       }
-    } : json('null')
+    } : {
+      services: {
+         blob: {
+           enabled: true
+         }
+         table: {
+            enabled: true
+         }
+         file: {
+            enabled: true
+         }
+      }
+      keySource: 'Microsoft.Storage'
+    }
 
     networkAcls: enablePrivateLink ? {
       bypass: 'AzureServices'
@@ -201,7 +217,12 @@ resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2021-04-01
       enabled: true
       days: deleteRetention
     }
-  } : json('null')
+  } : {
+    deleteRetentionPolicy: {
+      enabled: false
+      allowPermanentDelete: false
+    }
+  }
 }
 
 resource storage_containers 'Microsoft.Storage/storageAccounts/blobServices/containers@2022-05-01' = [for item in containers: {

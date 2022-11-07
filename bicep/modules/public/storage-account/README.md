@@ -20,8 +20,8 @@ This module supports the following features.
 | :-------------------------------------- | :------: | :------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `resourceName`                          | `string` | Yes      | Used to name all resources                                                                                                                                                                                                                                                    |
 | `location`                              | `string` | No       | Resource Location.                                                                                                                                                                                                                                                            |
-| `lock`                                  | `string` | No       | Optional. Specify the type of lock.                                                                                                                                                                                                                                           |
 | `tags`                                  | `object` | No       | Tags.                                                                                                                                                                                                                                                                         |
+| `lock`                                  | `string` | No       | Optional. Specify the type of lock.                                                                                                                                                                                                                                           |
 | `sku`                                   | `string` | No       | Specifies the storage account sku type.                                                                                                                                                                                                                                       |
 | `accessTier`                            | `string` | No       | Specifies the storage account access tier.                                                                                                                                                                                                                                    |
 | `containers`                            | `array`  | No       | Optional. Array of Storage Containers to be created.                                                                                                                                                                                                                          |
@@ -50,7 +50,7 @@ This module supports the following features.
 ### Example 1
 
 ```bicep
-module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
+module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.4' = {
   name: 'storage_account'
   params: {
     resourceName: resourceName
@@ -63,7 +63,7 @@ module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
 ### Example 2
 
 ```bicep
-module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
+module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.4' = {
   name: 'storage_account'
   params: {
     resourceName: resourceName

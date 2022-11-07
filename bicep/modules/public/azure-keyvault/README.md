@@ -12,8 +12,8 @@ This module deploys a key vault.
 | :-------------------------------------- | :------------: | :------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `resourceName`                          | `string`       | Yes      | Used to name all resources                                                                                                                                                                                                                                                    |
 | `location`                              | `string`       | No       | Resource Location.                                                                                                                                                                                                                                                            |
-| `enableDeleteLock`                      | `bool`         | No       | Enable lock to prevent accidental deletion                                                                                                                                                                                                                                    |
 | `tags`                                  | `object`       | No       | Tags.                                                                                                                                                                                                                                                                         |
+| `enableDeleteLock`                      | `bool`         | No       | Enable lock to prevent accidental deletion                                                                                                                                                                                                                                    |
 | `sku`                                   | `string`       | No       | Key Vault SKU.                                                                                                                                                                                                                                                                |
 | `accessPolicies`                        | `array`        | No       | Specify Access Policies to Enable (Optional).                                                                                                                                                                                                                                 |
 | `softDeleteRetentionInDays`             | `int`          | No       | Key Vault Retention Days.                                                                                                                                                                                                                                                     |
@@ -40,7 +40,7 @@ This module deploys a key vault.
 ### Example 1
 
 ```bicep
-module kv 'br:osdubicep.azurecr.io/bicep/modules/public/keyvault:1.0.2' = {
+module kv 'br:osdubicep.azurecr.io/public/keyvault:1.0.3' = {
   name: 'azure_keyvault'
   params: {
     resourceName: 'acr${unique(resourceGroup().name)}'
@@ -53,7 +53,7 @@ module kv 'br:osdubicep.azurecr.io/bicep/modules/public/keyvault:1.0.2' = {
 ### Example 2
 
 ```bicep
-module kv 'br:osdubicep.azurecr.io/bicep/modules/public/keyvault:1.0.2' = {
+module kv 'br:osdubicep.azurecr.io/public/keyvault:1.0.3' = {
   name: 'azure_keyvault'
   params: {
     resourceName: 'acr${unique(resourceGroup().name)}'

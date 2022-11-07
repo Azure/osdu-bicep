@@ -51,3 +51,6 @@ rule:
     - Azure.KeyVault.PurgeProtect
     - Azure.AppGw.UseHTTPS #In this project AGIC is in charge of managing the AppGW.
     - Azure.ACR.ContentTrust
+    - Azure.Storage.UseReplication
+    - Azure.Storage.SoftDelete
+    - Azure.Cosmos.DisableMetadataWrite
