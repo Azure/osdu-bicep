@@ -18,6 +18,22 @@ if [ -z $RESOURCE_GROUP_NAME ]; then
   RESOURCE_GROUP_NAME="osdubicep-testing"
 fi
 
+# Check initial parameters
+if [ -z $APPLICATION_CLIENT_ID ]; then
+  echo "Script cannot run if the APPLICATION_CLIENT_ID is not given"
+  exit 1
+fi
+
+if [ -z $APPLICATION_CLIENT_SECRET ]; then
+  echo "Script cannot run if the APPLICATION_CLIENT_SECRET is not given"
+  exit 1
+fi
+
+if [ -z $APPLICATION_OBJECT_ID ]; then
+  echo "Script cannot run if the APPLICATION_OBJECT_ID is not given"
+  exit 1
+fi
+
 # Check if Azure CLI Logged in, if not prompt to login then set default values.
 AZURE_ACCOUNT=$(az account show --query '[tenantId, id, user.name]' -otsv) 
 if [ -z "$AZURE_ACCOUNT" ]; then
@@ -97,6 +113,9 @@ if [[ $VALIDATE_TEMPLATE == 1 ]]; then
     az deployment group what-if --template-file $TEMPLATE \
       --resource-group $RESOURCE_GROUP_NAME \
       --parameter $PARAMETERS \
+      --parameters applicationId=$APPLICATION_OBJECT_ID \
+      --parameters applicationClientId=$APPLICATION_CLIENT_ID \
+      --parameters applicationClientSecret=$APPLICATION_CLIENT_SECRET \
       -ojson
 
     if [[ $? == 0 ]]; then
@@ -111,6 +130,9 @@ if [[ $VALIDATE_TEMPLATE == 1 ]]; then
     az deployment group validate --template-file $TEMPLATE \
       --resource-group $RESOURCE_GROUP_NAME \
       --parameter $PARAMETERS \
+      --parameters applicationId=$APPLICATION_OBJECT_ID \
+      --parameters applicationClientId=$APPLICATION_CLIENT_ID \
+      --parameters applicationClientSecret=$APPLICATION_CLIENT_SECRET \
       -ojson
 
     if [[ $? == 0 ]]; then
@@ -127,6 +149,9 @@ echo "Deploying [$TEMPLATE] ARM template..."
 az deployment group create --template-file $TEMPLATE \
       --resource-group $RESOURCE_GROUP_NAME \
       --parameter $PARAMETERS \
+      --parameters applicationId=$APPLICATION_OBJECT_ID \
+      --parameters applicationClientId=$APPLICATION_CLIENT_ID \
+      --parameters applicationClientSecret=$APPLICATION_CLIENT_SECRET \
       -ojson 1>/dev/null
 
 if [[ $? == 0 ]]; then
