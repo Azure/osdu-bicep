@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "3695773255769860275"
+      "templateHash": "7000489714372928700"
     }
   },
   "parameters": {
@@ -24,18 +24,18 @@
         "description": "Resource Location."
       }
     },
-    "enableDeleteLock": {
-      "type": "bool",
-      "defaultValue": false,
-      "metadata": {
-        "description": "Enable lock to prevent accidental deletion"
-      }
-    },
     "tags": {
       "type": "object",
       "defaultValue": {},
       "metadata": {
         "description": "Tags."
+      }
+    },
+    "enableDeleteLock": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Enable lock to prevent accidental deletion"
       }
     },
     "sku": {
