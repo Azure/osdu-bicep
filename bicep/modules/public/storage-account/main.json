@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.12.1.58429",
-      "templateHash": "5650308292576798852"
+      "version": "0.11.1.770",
+      "templateHash": "3072127216391654497"
     }
   },
   "parameters": {
@@ -24,6 +24,13 @@
         "description": "Resource Location."
       }
     },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags."
+      }
+    },
     "lock": {
       "type": "string",
       "defaultValue": "NotSpecified",
@@ -35,13 +42,6 @@
         "NotSpecified",
         "ReadOnly"
       ]
-    },
-    "tags": {
-      "type": "object",
-      "defaultValue": {},
-      "metadata": {
-        "description": "Tags."
-      }
     },
     "sku": {
       "type": "string",
@@ -126,12 +126,12 @@
     },
     "logsToEnable": {
       "type": "array",
-      "allowedValues": [
+      "defaultValue": [
         "StorageRead",
         "StorageWrite",
         "StorageDelete"
       ],
-      "defaultValue": [
+      "allowedValues": [
         "StorageRead",
         "StorageWrite",
         "StorageDelete"
@@ -142,9 +142,6 @@
     },
     "metricsToEnable": {
       "type": "array",
-      "items": {
-        "type": "string"
-      },
       "defaultValue": [
         "AllMetrics"
       ],
@@ -417,8 +414,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.12.1.58429",
-              "templateHash": "1092113050342185860"
+              "version": "0.11.1.770",
+              "templateHash": "4109777488614566930"
             }
           },
           "parameters": {
