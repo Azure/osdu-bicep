@@ -8,6 +8,9 @@ param resourceName string
 @description('Resource Location.')
 param location string = resourceGroup().location
 
+@description('Tags.')
+param tags object = {}
+
 @allowed([
   'CanNotDelete'
   'NotSpecified'
@@ -15,9 +18,6 @@ param location string = resourceGroup().location
 ])
 @description('Optional. Specify the type of lock.')
 param lock string = 'NotSpecified'
-
-@description('Tags.')
-param tags object = {}
 
 @description('Specifies the storage account sku type.')
 @allowed([

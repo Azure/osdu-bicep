@@ -50,7 +50,7 @@ This module supports the following features.
 ### Example 1
 
 ```bicep
-module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
+module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.4' = {
   name: 'storage_account'
   params: {
     resourceName: resourceName
@@ -63,7 +63,7 @@ module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
 ### Example 2
 
 ```bicep
-module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.2' = {
+module storage 'br:osdubicep.azurecr.io/public/storage-account:1.0.4' = {
   name: 'storage_account'
   params: {
     resourceName: resourceName
