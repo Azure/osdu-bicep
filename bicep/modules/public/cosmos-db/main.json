@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.12.1.58429",
-      "templateHash": "12659828886937090406"
+      "version": "0.11.1.770",
+      "templateHash": "1408174242260462869"
     }
   },
   "parameters": {
@@ -24,11 +24,11 @@
         "description": "Optional: Resource Location."
       }
     },
-    "multiwriteRegions": {
-      "type": "array",
-      "defaultValue": [],
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
       "metadata": {
-        "description": "Optional. Locations enabled for the Cosmos DB account."
+        "description": "Tags."
       }
     },
     "enableDeleteLock": {
@@ -38,11 +38,11 @@
         "description": "Enable lock to prevent accidental deletion"
       }
     },
-    "tags": {
-      "type": "object",
-      "defaultValue": {},
+    "multiwriteRegions": {
+      "type": "array",
+      "defaultValue": [],
       "metadata": {
-        "description": "Tags."
+        "description": "Optional. Locations enabled for the Cosmos DB account."
       }
     },
     "systemAssignedIdentity": {
@@ -151,6 +151,10 @@
     },
     "capabilitiesToAdd": {
       "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional. List of Cosmos DB capabilities for the account."
+      },
       "allowedValues": [
         "EnableCassandra",
         "EnableTable",
@@ -158,11 +162,7 @@
         "EnableMongo",
         "DisableRateLimitingResponses",
         "EnableServerless"
-      ],
-      "defaultValue": [],
-      "metadata": {
-        "description": "Optional. List of Cosmos DB capabilities for the account."
-      }
+      ]
     },
     "backupPolicyType": {
       "type": "string",
@@ -262,7 +262,7 @@
     },
     "logsToEnable": {
       "type": "array",
-      "allowedValues": [
+      "defaultValue": [
         "DataPlaneRequests",
         "MongoRequests",
         "QueryRuntimeStatistics",
@@ -273,7 +273,7 @@
         "GremlinRequests",
         "TableApiRequests"
       ],
-      "defaultValue": [
+      "allowedValues": [
         "DataPlaneRequests",
         "MongoRequests",
         "QueryRuntimeStatistics",
@@ -290,9 +290,6 @@
     },
     "metricsToEnable": {
       "type": "array",
-      "items": {
-        "type": "string"
-      },
       "defaultValue": [
         "Requests"
       ],
@@ -547,8 +544,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.12.1.58429",
-              "templateHash": "13074483861134354480"
+              "version": "0.11.1.770",
+              "templateHash": "13268808203240421716"
             }
           },
           "parameters": {
@@ -662,8 +659,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.12.1.58429",
-                      "templateHash": "1525441898547943184"
+                      "version": "0.11.1.770",
+                      "templateHash": "8351251161510182559"
                     }
                   },
                   "parameters": {
@@ -850,8 +847,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.12.1.58429",
-              "templateHash": "17656234929535734411"
+              "version": "0.11.1.770",
+              "templateHash": "12499630071216301871"
             }
           },
           "parameters": {
@@ -972,8 +969,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.12.1.58429",
-                      "templateHash": "14334801580993727968"
+                      "version": "0.11.1.770",
+                      "templateHash": "12157261947712267574"
                     }
                   },
                   "parameters": {
@@ -1152,8 +1149,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.12.1.58429",
-              "templateHash": "14712511766736610307"
+              "version": "0.11.1.770",
+              "templateHash": "3584409557580155732"
             }
           },
           "parameters": {
