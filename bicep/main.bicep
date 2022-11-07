@@ -94,9 +94,118 @@ module logAnalytics 'br:osdubicep.azurecr.io/public/log-analytics:1.0.4' = {
   ]
 }
 
-resource exitingLogAnalytics 'Microsoft.OperationalInsights/workspaces@2021-06-01' existing = {
-  name: logAnalytics.outputs.name
+/*
+ __  ___  ___________    ____ ____    ____  ___      __    __   __      .___________.
+|  |/  / |   ____\   \  /   / \   \  /   / /   \    |  |  |  | |  |     |           |
+|  '  /  |  |__   \   \/   /   \   \/   / /  ^  \   |  |  |  | |  |     `---|  |----`
+|    <   |   __|   \_    _/     \      / /  /_\  \  |  |  |  | |  |         |  |     
+|  .  \  |  |____    |  |        \    / /  _____  \ |  `--'  | |  `----.    |  |     
+|__|\__\ |_______|   |__|         \__/ /__/     \__\ \______/  |_______|    |__|                                                                     
+*/
+
+module keyvault './modules/public/azure-keyvault/main.bicep' = {
+  name: '${controlPlane}-azure-keyvault'
+  params: {
+    resourceName: controlPlane
+    location: location
+    
+    // Assign Tags
+    tags: {
+      layer: 'Control Plane'
+    }
+
+    // Hook up Diagnostics
+    diagnosticWorkspaceId: logAnalytics.outputs.id
+
+    // Configure Access
+    accessPolicies: [
+      {
+        principalId: clusterIdentity.outputs.principalId
+        permissions: {
+          secrets: [
+            'get'
+            'list'
+          ]
+        }
+      }
+      {
+        principalId: applicationId
+        permissions: {
+          secrets: [
+            'get'
+            'list'
+          ]
+          certificates: [
+            'get'
+            'update'
+            'import'
+          ]
+          keys: [
+            'get'
+            'encrypt'
+            'decrypt'
+          ]
+        }
+      }
+    ]
+
+    // Configure Secrets
+    secretsObject: { secrets: [
+      // Misc Secrets
+      {
+        secretName: 'tenant-id'
+        secretValue: subscription().tenantId
+      }
+      {
+        secretName: 'subscription-id'
+        secretValue: subscription().subscriptionId
+      }
+      // Registry Secrets
+      {
+        secretName: 'container-registry'
+        secretValue: registry.outputs.name
+      }
+      // Azure AD Secrets
+      {
+        secretName: 'aad-client-id'
+        secretValue: applicationId
+      }
+      {
+        secretName: 'app-dev-sp-username'
+        secretValue: applicationClientId
+      }
+      {
+        secretName: 'app-dev-sp-password'
+        secretValue: applicationClientSecret
+      }
+      {
+        secretName: 'app-dev-sp-id'
+        secretValue: applicationClientId
+      }
+      // Managed Identity
+      {
+        secretName: 'osdu-identity-id'
+        secretValue: clusterIdentity.outputs.principalId
+      }
+    ]}
+
+    // Assign RBAC
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: 'Reader'
+        principalIds: [
+          clusterIdentity.outputs.principalId
+          applicationClientId
+        ]
+        principalType: 'ServicePrincipal'
+      }
+    ]
+
+    // Hookup Private Links
+    privateLinkSettings: privateLinkSettings
+  }
 }
+
 
 
 /*
@@ -251,7 +360,7 @@ module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.2' = {
 var storageAccountType = 'Standard_LRS'
 
 // Create Storage Account
-module configStorage './modules/public/storage-account/main.bicep' = {
+module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
   name: '${controlPlane}-azure-storage'
   params: {
     resourceName: controlPlane
@@ -288,6 +397,11 @@ module configStorage './modules/public/storage-account/main.bicep' = {
 
     // Hookup Customer Managed Encryption Key
     cmekConfiguration: cmekConfiguration
+
+    // Persist Secrets to Vault
+    keyVaultName: keyvault.outputs.name
+    storageAccountSecretName: 'tbl-storage'
+    storageAccountKeySecretName: 'tbl-storage-key'
   }
 }
 
@@ -368,151 +482,8 @@ module database './modules/public/cosmos-db/main.bicep' = {
 
 
 
-/*
- __  ___  ___________    ____ ____    ____  ___      __    __   __      .___________.
-|  |/  / |   ____\   \  /   / \   \  /   / /   \    |  |  |  | |  |     |           |
-|  '  /  |  |__   \   \/   /   \   \/   / /  ^  \   |  |  |  | |  |     `---|  |----`
-|    <   |   __|   \_    _/     \      / /  /_\  \  |  |  |  | |  |         |  |     
-|  .  \  |  |____    |  |        \    / /  _____  \ |  `--'  | |  `----.    |  |     
-|__|\__\ |_______|   |__|         \__/ /__/     \__\ \______/  |_______|    |__|                                                                     
-*/
-
-module keyvault './modules/public/azure-keyvault/main.bicep' = {
-  name: '${controlPlane}-azure-keyvault'
-  params: {
-    resourceName: controlPlane
-    location: location
-    
-    // Assign Tags
-    tags: {
-      layer: 'Control Plane'
-    }
-
-    // Hook up Diagnostics
-    diagnosticWorkspaceId: logAnalytics.outputs.id
-
-    // Configure Access
-    accessPolicies: [
-      {
-        principalId: clusterIdentity.outputs.principalId
-        permissions: {
-          secrets: [
-            'get'
-            'list'
-          ]
-        }
-      }
-      {
-        principalId: applicationId
-        permissions: {
-          secrets: [
-            'get'
-            'list'
-          ]
-          certificates: [
-            'get'
-            'update'
-            'import'
-          ]
-          keys: [
-            'get'
-            'encrypt'
-            'decrypt'
-          ]
-        }
-      }
-    ]
-
-    // Configure Secrets
-    secretsObject: { secrets: [
-      // Misc Secrets
-      {
-        secretName: 'tenant-id'
-        secretValue: subscription().tenantId
-      }
-      {
-        secretName: 'subscription-id'
-        secretValue: subscription().subscriptionId
-      }
-      // Registry Secrets
-      {
-        secretName: 'container-registry'
-        secretValue: registry.outputs.name
-      }
-      // Storage Secrets
-      {
-        secretName: 'storage-account'
-        secretValue: configStorage.outputs.name
-      }
-      // {
-      //   secretName: 'storage-account-key'
-      //   secretValue: storageKey
-      // }
-      // Azure AD Secrets
-      {
-        secretName: 'aad-client-id'
-        secretValue: applicationId
-      }
-      {
-        secretName: 'app-dev-sp-username'
-        secretValue: applicationClientId
-      }
-      {
-        secretName: 'app-dev-sp-password'
-        secretValue: applicationClientSecret
-      }
-      {
-        secretName: 'app-dev-sp-id'
-        secretValue: applicationClientId
-      }
-      // Managed Identity
-      {
-        secretName: 'osdu-identity-id'
-        secretValue: clusterIdentity.outputs.principalId
-      }
-      // Log Analytics
-      // {
-      //   secretName: 'log-workspace-id'
-      //   secretValue: exitingLogAnalytics.id
-      // }
-      // {
-      //   secretName: 'log-workspace-key'
-      //   secretValue: listKeys(exitingLogAnalytics.id, exitingLogAnalytics.apiVersion).primarySharedKey
-      // }
-    ]}
-
-    // Assign RBAC
-    roleAssignments: [
-      {
-        roleDefinitionIdOrName: 'Reader'
-        principalIds: [
-          clusterIdentity.outputs.principalId
-          applicationClientId
-        ]
-        principalType: 'ServicePrincipal'
-      }
-    ]
-
-    // Hookup Private Links
-    privateLinkSettings: privateLinkSettings
-  }
-}
 
 
-// resource existingStorage 'Microsoft.Storage/storageAccounts@2022-05-01' existing = {
-//   name: configStorage.outputs.name
-// }
-
-// var storageKey = listKeys(existingStorage.id, existingStorage.apiVersion).keys[0].value
-
-// module keyVault_secrets './modules/public/private/keyvault_secrets.bicep' = {
-//   name: '${uniqueString(deployment().name, location)}-KeyVault-Secret'
-//   params: {
-//     name: 'storage-account-key'
-//     value: storageKey
-//     keyVaultName: keyvault.outputs.name
-//   }
-// }
 
 
 // /*
