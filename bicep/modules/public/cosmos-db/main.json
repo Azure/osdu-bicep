@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "1408174242260462869"
+      "templateHash": "9518604463694229617"
     }
   },
   "parameters": {
@@ -545,7 +545,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "13268808203240421716"
+              "templateHash": "11078959652809048920"
             }
           },
           "parameters": {
@@ -627,7 +627,7 @@
               },
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2020-10-01",
-              "name": "[format('{0}-sqldb-{1}', uniqueString(deployment().name, parameters('name')), parameters('containers')[copyIndex()].name)]",
+              "name": "[format('{0}-{1}-graph-{2}', deployment().name, parameters('name'), parameters('containers')[copyIndex()].name)]",
               "properties": {
                 "expressionEvaluationOptions": {
                   "scope": "inner"
@@ -848,7 +848,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "12499630071216301871"
+              "templateHash": "14533062699228050411"
             }
           },
           "parameters": {
@@ -937,7 +937,7 @@
               },
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2020-10-01",
-              "name": "[format('{0}-graph-{1}', uniqueString(deployment().name, parameters('name')), parameters('graphs')[copyIndex()].name)]",
+              "name": "[format('{0}-{1}-graph-{2}', deployment().name, parameters('name'), parameters('graphs')[copyIndex()].name)]",
               "properties": {
                 "expressionEvaluationOptions": {
                   "scope": "inner"
