@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.11.1.770",
-      "templateHash": "15481904701902415279"
+      "version": "0.12.1.58429",
+      "templateHash": "5650308292576798852"
     }
   },
   "parameters": {
@@ -126,12 +126,12 @@
     },
     "logsToEnable": {
       "type": "array",
-      "defaultValue": [
+      "allowedValues": [
         "StorageRead",
         "StorageWrite",
         "StorageDelete"
       ],
-      "allowedValues": [
+      "defaultValue": [
         "StorageRead",
         "StorageWrite",
         "StorageDelete"
@@ -142,6 +142,9 @@
     },
     "metricsToEnable": {
       "type": "array",
+      "items": {
+        "type": "string"
+      },
       "defaultValue": [
         "AllMetrics"
       ],
@@ -233,7 +236,7 @@
       "properties": {
         "accessTier": "[parameters('accessTier')]",
         "minimumTlsVersion": "TLS1_2",
-        "encryption": "[if(variables('enableCMEK'), createObject('identity', createObject('userAssignedIdentity', parameters('cmekConfiguration').identityId), 'services', createObject('blob', createObject('enabled', true()), 'table', createObject('enabled', true())), 'keySource', 'Microsoft.Keyvault', 'keyvaultproperties', createObject('keyname', parameters('cmekConfiguration').keyName, 'keyvaulturi', parameters('cmekConfiguration').kvUrl)), json('null'))]",
+        "encryption": "[if(variables('enableCMEK'), createObject('identity', createObject('userAssignedIdentity', parameters('cmekConfiguration').identityId), 'services', createObject('blob', createObject('enabled', true()), 'table', createObject('enabled', true()), 'file', createObject('enabled', true())), 'keySource', 'Microsoft.Keyvault', 'keyvaultproperties', createObject('keyname', parameters('cmekConfiguration').keyName, 'keyvaulturi', parameters('cmekConfiguration').kvUrl)), createObject('services', createObject('blob', createObject('enabled', true()), 'table', createObject('enabled', true()), 'file', createObject('enabled', true())), 'keySource', 'Microsoft.Storage'))]",
         "networkAcls": "[if(variables('enablePrivateLink'), createObject('bypass', 'AzureServices', 'defaultAction', 'Deny'), createObject())]"
       }
     },
@@ -241,7 +244,7 @@
       "type": "Microsoft.Storage/storageAccounts/blobServices",
       "apiVersion": "2021-04-01",
       "name": "[format('{0}/{1}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')), 'default')]",
-      "properties": "[if(greater(parameters('deleteRetention'), 0), createObject('changeFeed', createObject('enabled', true()), 'restorePolicy', createObject('enabled', true(), 'days', 6), 'isVersioningEnabled', true(), 'deleteRetentionPolicy', createObject('enabled', true(), 'days', parameters('deleteRetention'))), json('null'))]",
+      "properties": "[if(greater(parameters('deleteRetention'), 0), createObject('changeFeed', createObject('enabled', true()), 'restorePolicy', createObject('enabled', true(), 'days', 6), 'isVersioningEnabled', true(), 'deleteRetentionPolicy', createObject('enabled', true(), 'days', parameters('deleteRetention'))), createObject('deleteRetentionPolicy', createObject('enabled', false(), 'allowPermanentDelete', false())))]",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
       ]
@@ -414,8 +417,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.11.1.770",
-              "templateHash": "4109777488614566930"
+              "version": "0.12.1.58429",
+              "templateHash": "1092113050342185860"
             }
           },
           "parameters": {
