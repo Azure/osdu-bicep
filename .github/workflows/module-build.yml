@@ -36,7 +36,7 @@ jobs:
 
       # - name: Install the latest Bicep CLI
       #   run: |
-      #     CURRENT=$(pwd) 
+      #     CURRENT=$(pwd)
       #     cd ..
       #     curl -Lo bicep https://github.com/Azure/bicep/releases/download/v0.11.1/bicep-linux-x64
       #     curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
