@@ -8,6 +8,12 @@ param resourceName string
 @description('Optional: Resource Location.')
 param resourceLocation string = resourceGroup().location
 
+@description('Tags.')
+param tags object = {}
+
+@description('Enable lock to prevent accidental deletion')
+param enableDeleteLock bool = false
+
 @description('Optional. Locations enabled for the Cosmos DB account.')
 param multiwriteRegions array = [
   /* example
@@ -19,11 +25,7 @@ param multiwriteRegions array = [
   */
 ]
 
-@description('Enable lock to prevent accidental deletion')
-param enableDeleteLock bool = false
 
-@description('Tags.')
-param tags object = {}
 
 @description('Optional. Enables system assigned managed identity on the resource.')
 param systemAssignedIdentity bool = false
