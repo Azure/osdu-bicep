@@ -53,3 +53,4 @@ rule:
     - Azure.ACR.ContentTrust
     - Azure.Storage.UseReplication
     - Azure.Storage.SoftDelete
+    - Azure.Cosmos.DisableMetadataWrite
