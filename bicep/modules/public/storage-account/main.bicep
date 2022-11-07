@@ -370,9 +370,16 @@ resource virtualNetworkLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
 // Secrets
 ////////////////
 
+@description('Optional: Key Vault Name to store secrets into')
 param keyVaultName string = ''
+
+@description('Optional: To save storage account name into vault set the secret hame.')
 param storageAccountSecretName string = ''
+
+@description('Optional: To save storage account key into vault set the secret hame.')
 param storageAccountKeySecretName string = ''
+
+@description('Optional: To save storage account connectionstring into vault set the secret hame.')
 param storageAccountConnectionString string = ''
 
 module secretStorageAccountName  '.bicep/keyvault_secrets.bicep' = if (!empty(keyVaultName) && !empty(storageAccountSecretName)) {
