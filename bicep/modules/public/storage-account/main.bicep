@@ -278,6 +278,11 @@ resource storage_diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-p
   ]
 }
 
+@description('The resource ID.')
+output id string = storage.id
+
+@description('The name of the resource.')
+output name string = storage.name
 
 ////////////////
 // Private Link
@@ -361,8 +366,38 @@ resource virtualNetworkLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
   ]
 }
 
-@description('The resource ID.')
-output id string = storage.id
+////////////////
+// Secrets
+////////////////
 
-@description('The name of the resource.')
-output name string = storage.name
+param keyVaultName string = ''
+param storageAccountSecretName string = ''
+param storageAccountKeySecretName string = ''
+param storageAccountConnectionString string = ''
+
+module secretStorageAccountName  '.bicep/keyvault_secrets.bicep' = if (!empty(keyVaultName) && !empty(storageAccountSecretName)) {
+  name: '${deployment().name}-secret-name'
+  params: {
+    keyVaultName: keyVaultName
+    name: storageAccountSecretName
+    value: storage.name
+  }
+}
+
+module secretStorageAccountKey '.bicep/keyvault_secrets.bicep' =  if (!empty(keyVaultName) && !empty(storageAccountKeySecretName)) {
+  name: '${deployment().name}-secret-key'
+  params: {
+    keyVaultName: keyVaultName
+    name: storageAccountKeySecretName
+    value: storage.listKeys().keys[0].value
+  }
+}
+
+module secretStorageAccountConnection '.bicep/keyvault_secrets.bicep' =  if (!empty(keyVaultName) && !empty(storageAccountConnectionString)) {
+  name: '${deployment().name}-secret-accountName'
+  params: {
+    keyVaultName: keyVaultName
+    name: storageAccountConnectionString
+    value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${storage.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+  }
+}
