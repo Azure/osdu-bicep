@@ -234,9 +234,7 @@ jobs:
             DEPNAME='Dep${{ github.run_number }}'
             PARAMS='${{ steps.imperitiveparams.outputs.PARAMOVERRIDES }} applicationClientId=${{ secrets.STAMP_CLIENT_ID }} applicationClientSecret=${{ secrets.STAMP_CLIENT_SECRET }} applicationId=${{ secrets.STAMP_APPLICATION_OID }}'
             echo $PARAMS
-            cd bicep
             az deployment group validate -f main.bicep -g $RESOURCE_GROUP -p ${{ env.ParamFilePath }} -p $PARAMS --verbose
-            cd ..
 
       - name: What If
         uses: Azure/cli@1.0.4
@@ -250,9 +248,7 @@ jobs:
             DEPNAME='${{ env.DEPNAME }}'
             WHATIFPATH='whatif.json'
             PARAMS='${{ steps.imperitiveparams.outputs.PARAMOVERRIDES }} applicationClientId=${{ secrets.STAMP_CLIENT_ID }} applicationClientSecret=${{ secrets.STAMP_CLIENT_SECRET }} applicationId=${{ secrets.STAMP_APPLICATION_OID }}'
-            cd bicep
             az deployment group what-if --no-pretty-print -f bicep/main.bicep -g $RESOURCE_GROUP -p ${{ env.ParamFilePath }} -p $PARAMS > $WHATIFPATH
-            cd ..
             if [[ -f $WHATIFPATH ]]
             then
                 echo "The WhatIf json file was created"
@@ -332,9 +328,7 @@ jobs:
           inlineScript: |
             DEPNAME='Dep${{ github.run_number }}'
             PARAMS="location=$REGION applicationClientId=${{ secrets.STAMP_CLIENT_ID }} applicationClientSecret=${{ secrets.STAMP_CLIENT_SECRET }} applicationId=${{ secrets.STAMP_APPLICATION_OID }}'"
-            cd bicep
             az deployment group create -f bicep/main.bicep -g $RESOURCE_GROUP -p ${{ env.ParamFilePath }} -p $PARAMS --name $DEPNAME --verbose
-            cd ..
             az deployment operation group list --resource-group $RESOURCE_GROUP --name $DEPNAME
 
             #outputs

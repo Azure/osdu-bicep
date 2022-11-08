@@ -57,8 +57,9 @@ jobs:
           {
                 New-Item -ItemType Directory -Force -Path $compiledir
           }
-
-          /home/runner/.azure/bin/bicep build bicep/main.bicep --outdir $compiledir
+          cd bicep
+          /home/runner/.azure/bin/bicep build main.bicep --outdir $compiledir
+          cd ..
 
       - uses: actions/checkout@v2
         if: github.event_name != 'push'
