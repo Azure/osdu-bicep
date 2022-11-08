@@ -220,7 +220,7 @@ jobs:
         with:
           azcliversion: ${{ env.AZCLIVERSION }}
           inlineScript: |
-            PARAMOVERRIDES="location=${{ steps.params.outputs.REGION}}"
+            PARAMOVERRIDES="location=${{ steps.params.outputs.REGION }}"
             echo $PARAMOVERRIDES
             echo "::set-output name=PARAMOVERRIDES::$PARAMOVERRIDES"
 
@@ -232,7 +232,7 @@ jobs:
           azcliversion: ${{ env.AZCLIVERSION }}
           inlineScript: |
             DEPNAME='Dep${{ github.run_number }}'
-            PARAMS='${{ steps.imperitiveparams.outputs.PARAMOVERRIDES}}'
+            PARAMS='${{ steps.imperitiveparams.outputs.PARAMOVERRIDES }} applicationClientId=${{ secrets.STAMP_CLIENT_ID }} applicationClientSecret=${{ secrets.STAMP_CLIENT_SECRET }} applicationId=${{ secrets.STAMP_APPLICATION_OID }}'
             echo $PARAMS
             az deployment group validate -f bicep/main.bicep -g $RESOURCE_GROUP -p ${{ env.ParamFilePath }} -p $PARAMS --verbose
 

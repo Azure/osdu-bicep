@@ -416,7 +416,7 @@ module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
  \______| | _| `._____/__/     \__\ | _|      |__|  |__| 
 */
 
-module database './modules/public/cosmos-db/main.bicep' = {
+module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.4' = {
   name: '${controlPlane}-cosmos-db'
   params: {
     resourceName: controlPlane
@@ -477,11 +477,14 @@ module database './modules/public/cosmos-db/main.bicep' = {
     }
     defaultIdentity: !empty(cmekConfiguration.identityId) ? cmekConfiguration.identityId : ''
     kvKeyUri: !empty(cmekConfiguration.kvUrl) && !empty(cmekConfiguration.keyName) ? '${cmekConfiguration.kvUrl}/${cmekConfiguration.keyName}' : ''
+
+    // Persist Secrets to Vault
+    keyVaultName: keyvault.outputs.name
+    databaseEndpointSecretName: 'graph-db-endpoint'
+    databasePrimaryKeySecretName: 'graph-db-primary-key'
+    databaseConnectionStringSecretName: 'graph-db-connection'
   }
 }
-
-
-
 
 
 
