@@ -1,15 +1,17 @@
 /*
   This is the main bicep entry file.
 
-  10.20.22: Updated
+  11.8.22: Common Resources
 --------------------------------
-  - Establishing the Pipelines
-  - Added an Identity
+  - Established the Common Resources
 */
 
 @description('Specify the Azure region to place the application definition.')
 param location string = resourceGroup().location
 
+/////////////////
+// Identity Blade 
+/////////////////
 @description('Specify the AD Application Object Id.')
 param applicationId string
 
@@ -20,14 +22,92 @@ param applicationClientId string
 @secure()
 param applicationClientSecret string
 
-@description('Used to name all resources')
-var commonResources  = 'common'
 
+/////////////////
+// Network Blade 
+/////////////////
+@description('Name of the Virtual Network')
+param virtualNetworkName string = 'ctlplane'
+
+@description('Boolean indicating whether the VNet is new or existing')
+param virtualNetworkNewOrExisting string = 'new'
+
+@description('VNet address prefix')
+param virtualNetworkAddressPrefix string = '10.1.0.0/16'
+
+@description('Resource group of the VNet')
+param virtualNetworkResourceGroup string = ''
+
+@description('New or Existing subnet Name')
+param subnetName string = 'NodeSubnet'
+
+@description('Subnet address prefix')
+param subnetAddressPrefix string = '10.1.0.0/24'
+
+@description('Feature Flag on Private Link')
+param enablePrivateLink bool = false
+
+
+/////////////////
+// Security Blade 
+/////////////////
 @description('Optional. Customer Managed Encryption Key.')
 param cmekConfiguration object = {
   kvUrl: ''
   keyName: ''
   identityId: ''
+}
+
+
+/////////////////////////////////
+// Common Resources Configuration 
+/////////////////////////////////
+var commonLayerConfig = {
+  name: 'commonresources'
+  displayName: 'Common Resources'
+  secrets: {
+    tenantId: 'tenant-id'
+    subscriptionId: 'subscription-id'
+    registryName: 'container-registry'
+    applicationId: 'aad-client-id'
+    clientId: 'app-dev-sp-username'
+    clientSecret: 'app-dev-sp-password'
+    applicationPrincipalId: 'app-dev-sp-id'
+    stampIdentity: 'osdu-identity-id'
+    storageAccountName: 'tbl-storage'
+    storageAccountKey: 'tbl-storage-key'
+    cosmosConnectionString: 'graph-db-connection'
+    cosmosEndpoint: 'graph-db-endpoint'
+    cosmosPrimaryKey: 'graph-db-primary-key'
+    logAnalyticsId: 'log-workspace-id'
+    logAnalyticsKey: 'log-workspace-key'
+  }
+  logs: {
+    sku: 'PerGB2018'
+    retention: 30
+  }
+  registry: {
+    sku: 'Premium'
+  }
+  storage: {
+    sku: 'Standard_LRS'
+    tables: [
+      'PartitionInfo'
+    ]
+  }
+  database: {
+    name: 'graph-db'
+    throughput: 400
+    graphs: [
+      {
+        name: 'Entitlements'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/dataPartitionId'
+        ]
+      }
+    ]
+  }
 }
 
 
@@ -40,16 +120,15 @@ param cmekConfiguration object = {
 |__| |_______/ |_______||__| \__|     |__|     |__|     |__|         |__|     
 */
 
-// Create a Managed User Identity for the Cluster
-module clusterIdentity 'br:osdubicep.azurecr.io/public/user-managed-identity:1.0.1' = {
-  name: '${commonResources}-user-managed-identity'
+module stampIdentity 'br:osdubicep.azurecr.io/public/user-managed-identity:1.0.2' = {
+  name: '${commonLayerConfig.name}-user-managed-identity'
   params: {
-    resourceName: commonResources
+    resourceName: commonLayerConfig.name
     location: location
 
     // Assign Tags
     tags: {
-      layer: 'Control Plane'
+      layer: commonLayerConfig.displayName
     }
   }
 }
@@ -65,19 +144,19 @@ module clusterIdentity 'br:osdubicep.azurecr.io/public/user-managed-identity:1.0
 */
 
 module logAnalytics 'br:osdubicep.azurecr.io/public/log-analytics:1.0.4' = {
-  name: '${commonResources}-log-analytics'
+  name: '${commonLayerConfig.name}-log-analytics'
   params: {
-    resourceName: commonResources
+    resourceName: commonLayerConfig.name
     location: location
 
     // Assign Tags
     tags: {
-      layer: 'Control Plane'
+      layer: commonLayerConfig.displayName
     }
 
     // Configure Service
-    sku: 'PerGB2018'
-    retentionInDays: 30
+    sku: commonLayerConfig.logs.sku
+    retentionInDays: commonLayerConfig.logs.retention
     solutions: [
       {
         name: 'ContainerInsights'
@@ -90,9 +169,10 @@ module logAnalytics 'br:osdubicep.azurecr.io/public/log-analytics:1.0.4' = {
   // This dependency is only added to attempt to solve a timing issue.
   // Identities sometimes list as completed but can't be used yet.
   dependsOn: [
-    clusterIdentity
+    stampIdentity
   ]
 }
+
 
 /*
  __  ___  ___________    ____ ____    ____  ___      __    __   __      .___________.
@@ -103,15 +183,15 @@ module logAnalytics 'br:osdubicep.azurecr.io/public/log-analytics:1.0.4' = {
 |__|\__\ |_______|   |__|         \__/ /__/     \__\ \______/  |_______|    |__|                                                                     
 */
 
-module keyvault './modules/public/azure-keyvault/main.bicep' = {
-  name: '${commonResources}-azure-keyvault'
+module keyvault 'br:osdubicep.azurecr.io/public/azure-keyvault:1.0.3' = {
+  name: '${commonLayerConfig.name}-azure-keyvault'
   params: {
-    resourceName: commonResources
+    resourceName: commonLayerConfig.name
     location: location
     
     // Assign Tags
     tags: {
-      layer: 'Control Plane'
+      layer: commonLayerConfig.displayName
     }
 
     // Hook up Diagnostics
@@ -120,7 +200,7 @@ module keyvault './modules/public/azure-keyvault/main.bicep' = {
     // Configure Access
     accessPolicies: [
       {
-        principalId: clusterIdentity.outputs.principalId
+        principalId: stampIdentity.outputs.principalId
         permissions: {
           secrets: [
             'get'
@@ -153,39 +233,39 @@ module keyvault './modules/public/azure-keyvault/main.bicep' = {
     secretsObject: { secrets: [
       // Misc Secrets
       {
-        secretName: 'tenant-id'
+        secretName: commonLayerConfig.secrets.tenantId
         secretValue: subscription().tenantId
       }
       {
-        secretName: 'subscription-id'
+        secretName: commonLayerConfig.secrets.subscriptionId
         secretValue: subscription().subscriptionId
       }
       // Registry Secrets
       {
-        secretName: 'container-registry'
+        secretName: commonLayerConfig.secrets.registryName
         secretValue: registry.outputs.name
       }
       // Azure AD Secrets
       {
-        secretName: 'aad-client-id'
+        secretName: commonLayerConfig.secrets.applicationId
         secretValue: applicationId
       }
       {
-        secretName: 'app-dev-sp-username'
+        secretName: commonLayerConfig.secrets.clientId
         secretValue: applicationClientId
       }
       {
-        secretName: 'app-dev-sp-password'
+        secretName: commonLayerConfig.secrets.clientSecret
         secretValue: applicationClientSecret
       }
       {
-        secretName: 'app-dev-sp-id'
+        secretName: commonLayerConfig.secrets.applicationPrincipalId
         secretValue: applicationClientId
       }
       // Managed Identity
       {
-        secretName: 'osdu-identity-id'
-        secretValue: clusterIdentity.outputs.principalId
+        secretName: commonLayerConfig.secrets.stampIdentity
+        secretValue: stampIdentity.outputs.principalId
       }
     ]}
 
@@ -194,7 +274,7 @@ module keyvault './modules/public/azure-keyvault/main.bicep' = {
       {
         roleDefinitionIdOrName: 'Reader'
         principalIds: [
-          clusterIdentity.outputs.principalId
+          stampIdentity.outputs.principalId
           applicationClientId
         ]
         principalType: 'ServicePrincipal'
@@ -206,6 +286,16 @@ module keyvault './modules/public/azure-keyvault/main.bicep' = {
   }
 }
 
+module keyvaultSecrets './modules/public/private/keyvault_secrets.bicep' = {
+  name: '${commonLayerConfig.name}-log-analytics-secrets'
+  params: {
+    // Persist Secrets to Vault
+    keyVaultName: keyvault.outputs.name
+    workspaceName: logAnalytics.outputs.name
+    workspaceIdName: commonLayerConfig.secrets.logAnalyticsId
+    workspaceKeySecretName: commonLayerConfig.secrets.logAnalyticsKey
+  }
+}
 
 
 /*
@@ -216,26 +306,6 @@ module keyvault './modules/public/azure-keyvault/main.bicep' = {
 |  |\   | |  |____     |  |        \    /\    /   |  `--'  | |  |\  \----.|  .  \  
 |__| \__| |_______|    |__|         \__/  \__/     \______/  | _| `._____||__|\__\ 
 */
-@description('Name of the Virtual Network')
-param virtualNetworkName string = 'ctlplane'
-
-@description('Boolean indicating whether the VNet is new or existing')
-param virtualNetworkNewOrExisting string = 'new'
-
-@description('VNet address prefix')
-param virtualNetworkAddressPrefix string = '10.1.0.0/16'
-
-@description('Resource group of the VNet')
-param virtualNetworkResourceGroup string = ''
-
-@description('New or Existing subnet Name')
-param subnetName string = 'NodeSubnet'
-
-@description('Subnet address prefix')
-param subnetAddressPrefix string = '10.1.0.0/24'
-
-@description('Feature Flag on Private Link')
-param enablePrivateLink bool = false
 
 var vnetId = {
   new: resourceId('Microsoft.Network/virtualNetworks', virtualNetworkName)
@@ -252,18 +322,15 @@ var privateLinkSettings = enablePrivateLink ? {
   vnetId: '1'  // 1 is don't use.
 }
   
-
-
-// Create Virtual Network (If Not BYO)
 module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = if (virtualNetworkNewOrExisting == 'new') {
-  name: '${commonResources}-virtual-network'
+  name: '${commonLayerConfig.name}-virtual-network'
   params: {
     resourceName: virtualNetworkName
     location: location
 
     // Assign Tags
     tags: {
-      layer: 'Control Plane'
+      layer: commonLayerConfig.displayName
     }
 
     // Hook up Diagnostics
@@ -298,7 +365,7 @@ module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = if (virt
       {
         roleDefinitionIdOrName: 'Contributor'
         principalIds: [
-          clusterIdentity.outputs.principalId
+          stampIdentity.outputs.principalId
         ]
         principalType: 'ServicePrincipal'
       }
@@ -317,28 +384,28 @@ module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = if (virt
 */
 
 module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.2' = {
-  name: '${commonResources}-container-registry'
+  name: '${commonLayerConfig.name}-container-registry'
   params: {
-    resourceName: commonResources
+    resourceName: commonLayerConfig.name
     location: location
 
     // Assign Tags
     tags: {
-      layer: 'Control Plane'
+      layer: commonLayerConfig.displayName
     }
 
     // Hook up Diagnostics
     diagnosticWorkspaceId: logAnalytics.outputs.id
 
     // Configure Service
-    sku: 'Premium'
+    sku: commonLayerConfig.registry.sku
 
     // Assign RBAC
     roleAssignments: [
       {
         roleDefinitionIdOrName: 'ACR Pull'
         principalIds: [
-          clusterIdentity.outputs.principalId
+          stampIdentity.outputs.principalId
         ]
         principalType: 'ServicePrincipal'
       }
@@ -357,35 +424,32 @@ module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.2' = {
 .----)   |      |  |     |  `--'  | |  |\  \----./  _____  \ |  |__| | |  |____ 
 |_______/       |__|      \______/  | _| `._____/__/     \__\ \______| |_______|                                                                 
 */
-var storageAccountType = 'Standard_LRS'
 
 // Create Storage Account
 module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
-  name: '${commonResources}-azure-storage'
+  name: '${commonLayerConfig.name}-azure-storage'
   params: {
-    resourceName: commonResources
+    resourceName: commonLayerConfig.name
     location: location
 
     // Assign Tags
     tags: {
-      layer: 'Control Plane'
+      layer: commonLayerConfig.displayName
     }
 
     // Hook up Diagnostics
     diagnosticWorkspaceId: logAnalytics.outputs.id
 
     // Configure Service
-    sku: storageAccountType
-    tables: [
-      'PartitionInfo'
-    ]
+    sku: commonLayerConfig.storage.sku
+    tables: commonLayerConfig.storage.tables
 
     // Assign RBAC
     roleAssignments: [
       {
         roleDefinitionIdOrName: 'Contributor'
         principalIds: [
-          clusterIdentity.outputs.principalId
+          stampIdentity.outputs.principalId
           applicationClientId
         ]
         principalType: 'ServicePrincipal'
@@ -400,11 +464,10 @@ module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
 
     // Persist Secrets to Vault
     keyVaultName: keyvault.outputs.name
-    storageAccountSecretName: 'tbl-storage'
-    storageAccountKeySecretName: 'tbl-storage-key'
+    storageAccountSecretName: commonLayerConfig.secrets.storageAccountName
+    storageAccountKeySecretName: commonLayerConfig.secrets.storageAccountKey
   }
 }
-
 
 
 /*
@@ -417,14 +480,14 @@ module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
 */
 
 module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.4' = {
-  name: '${commonResources}-cosmos-db'
+  name: '${commonLayerConfig.name}-cosmos-db'
   params: {
-    resourceName: commonResources
+    resourceName: commonLayerConfig.name
     resourceLocation: location
 
     // Assign Tags
     tags: {
-      layer: 'Control Plane'
+      layer: commonLayerConfig.displayName
     }
 
     // Hook up Diagnostics
@@ -436,16 +499,8 @@ module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.4' = {
     ]
     gremlinDatabases: [
       {
-        name: 'osdu-graph'
-        graphs: [
-          {
-            automaticIndexing: true
-            name: 'Entitlements'
-            partitionKeyPaths: [
-              '/dataPartitionId'
-            ]
-          }
-        ]
+        name: commonLayerConfig.database.name
+        graphs: commonLayerConfig.database.graphs
       }
     ]
 
@@ -457,7 +512,7 @@ module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.4' = {
       {
         roleDefinitionIdOrName: 'Contributor'
         principalIds: [
-          clusterIdentity.outputs.principalId
+          stampIdentity.outputs.principalId
           applicationClientId
         ]
         principalType: 'ServicePrincipal'
@@ -470,19 +525,19 @@ module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.4' = {
     // Hookup Customer Managed Encryption Key
     systemAssignedIdentity: false
     userAssignedIdentities: !empty(cmekConfiguration.identityId) ? {
-      '${clusterIdentity.outputs.id}': {}
+      '${stampIdentity.outputs.id}': {}
       '${cmekConfiguration.identityId}': {}
     } : {
-      '${clusterIdentity.outputs.id}': {}
+      '${stampIdentity.outputs.id}': {}
     }
     defaultIdentity: !empty(cmekConfiguration.identityId) ? cmekConfiguration.identityId : ''
     kvKeyUri: !empty(cmekConfiguration.kvUrl) && !empty(cmekConfiguration.keyName) ? '${cmekConfiguration.kvUrl}/${cmekConfiguration.keyName}' : ''
 
     // Persist Secrets to Vault
     keyVaultName: keyvault.outputs.name
-    databaseEndpointSecretName: 'graph-db-endpoint'
-    databasePrimaryKeySecretName: 'graph-db-primary-key'
-    databaseConnectionStringSecretName: 'graph-db-connection'
+    databaseEndpointSecretName: commonLayerConfig.secrets.cosmosEndpoint
+    databasePrimaryKeySecretName: commonLayerConfig.secrets.cosmosPrimaryKey
+    databaseConnectionStringSecretName: commonLayerConfig.secrets.cosmosConnectionString
   }
 }
 
