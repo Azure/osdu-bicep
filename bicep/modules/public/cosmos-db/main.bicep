@@ -470,3 +470,47 @@ resource privateDNSZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneG
     ]
   }
 }
+
+
+////////////////
+// Secrets
+////////////////
+
+@description('Optional: Key Vault Name to store secrets into')
+param keyVaultName string = ''
+
+@description('Optional: To save storage account name into vault set the secret hame.')
+param databaseEndpointSecretName string = ''
+
+@description('Optional: To save storage account key into vault set the secret hame.')
+param databasePrimaryKeySecretName string = ''
+
+@description('Optional: To save storage account connectionstring into vault set the secret hame.')
+param databaseConnectionStringSecretName string = ''
+
+module secretDatabaseEndpoint  '.bicep/keyvault_secrets.bicep' = if (!empty(keyVaultName) && !empty(databaseEndpointSecretName)) {
+  name: '${deployment().name}-secret-name'
+  params: {
+    keyVaultName: keyVaultName
+    name: databaseEndpointSecretName
+    value: databaseAccount.properties.documentEndpoint
+  }
+}
+
+module secretDatabasePrimaryKey '.bicep/keyvault_secrets.bicep' =  if (!empty(keyVaultName) && !empty(databasePrimaryKeySecretName)) {
+  name: '${deployment().name}-secret-key'
+  params: {
+    keyVaultName: keyVaultName
+    name: databasePrimaryKeySecretName
+    value: databaseAccount.listKeys().primaryMasterKey
+  }
+}
+
+module secretDatabaseConnectionString '.bicep/keyvault_secrets.bicep' =  if (!empty(keyVaultName) && !empty(databaseConnectionStringSecretName)) {
+  name: '${deployment().name}-secret-accountName'
+  params: {
+    keyVaultName: keyVaultName
+    name: databaseConnectionStringSecretName
+    value: databaseAccount.listConnectionStrings().connectionStrings[0].connectionString
+  }
+}
