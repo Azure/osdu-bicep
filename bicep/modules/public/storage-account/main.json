@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "3072127216391654497"
+      "templateHash": "12981137037548580504"
     }
   },
   "parameters": {
@@ -180,6 +180,34 @@
       },
       "metadata": {
         "description": "Settings Required to Enable Private Link"
+      }
+    },
+    "keyVaultName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional: Key Vault Name to store secrets into"
+      }
+    },
+    "storageAccountSecretName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional: To save storage account name into vault set the secret hame."
+      }
+    },
+    "storageAccountKeySecretName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional: To save storage account key into vault set the secret hame."
+      }
+    },
+    "storageAccountConnectionString": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional: To save storage account connectionstring into vault set the secret hame."
       }
     }
   },
@@ -492,6 +520,276 @@
               }
             }
           ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    },
+    {
+      "condition": "[and(not(empty(parameters('keyVaultName'))), not(empty(parameters('storageAccountSecretName'))))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('{0}-secret-name', deployment().name)]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "keyVaultName": {
+            "value": "[parameters('keyVaultName')]"
+          },
+          "name": {
+            "value": "[parameters('storageAccountSecretName')]"
+          },
+          "value": {
+            "value": "[if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name'))]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.11.1.770",
+              "templateHash": "7304298555457891820"
+            }
+          },
+          "parameters": {
+            "keyVaultName": {
+              "type": "string",
+              "metadata": {
+                "description": "Conditional. The name of the parent key vault. Required if the template is used in a standalone deployment."
+              }
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. The name of the secret."
+              }
+            },
+            "value": {
+              "type": "secureString",
+              "metadata": {
+                "description": "Required. The value of the secret. NOTE: \"value\" will never be returned from the service, as APIs using this model are is intended for internal use in ARM deployments. Users should use the data-plane REST service for interaction with vault secrets."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2022-07-01",
+              "name": "[format('{0}/{1}', parameters('keyVaultName'), parameters('name'))]",
+              "properties": {
+                "value": "[parameters('value')]"
+              }
+            }
+          ],
+          "outputs": {
+            "name": {
+              "type": "string",
+              "value": "[parameters('name')]",
+              "metadata": {
+                "description": "The name of the secret."
+              }
+            },
+            "resourceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('name'))]",
+              "metadata": {
+                "description": "The resource ID of the secret."
+              }
+            },
+            "resourceGroupName": {
+              "type": "string",
+              "value": "[resourceGroup().name]",
+              "metadata": {
+                "description": "The name of the resource group the secret was created in."
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    },
+    {
+      "condition": "[and(not(empty(parameters('keyVaultName'))), not(empty(parameters('storageAccountKeySecretName'))))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('{0}-secret-key', deployment().name)]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "keyVaultName": {
+            "value": "[parameters('keyVaultName')]"
+          },
+          "name": {
+            "value": "[parameters('storageAccountKeySecretName')]"
+          },
+          "value": {
+            "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name'))), '2022-05-01').keys[0].value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.11.1.770",
+              "templateHash": "7304298555457891820"
+            }
+          },
+          "parameters": {
+            "keyVaultName": {
+              "type": "string",
+              "metadata": {
+                "description": "Conditional. The name of the parent key vault. Required if the template is used in a standalone deployment."
+              }
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. The name of the secret."
+              }
+            },
+            "value": {
+              "type": "secureString",
+              "metadata": {
+                "description": "Required. The value of the secret. NOTE: \"value\" will never be returned from the service, as APIs using this model are is intended for internal use in ARM deployments. Users should use the data-plane REST service for interaction with vault secrets."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2022-07-01",
+              "name": "[format('{0}/{1}', parameters('keyVaultName'), parameters('name'))]",
+              "properties": {
+                "value": "[parameters('value')]"
+              }
+            }
+          ],
+          "outputs": {
+            "name": {
+              "type": "string",
+              "value": "[parameters('name')]",
+              "metadata": {
+                "description": "The name of the secret."
+              }
+            },
+            "resourceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('name'))]",
+              "metadata": {
+                "description": "The resource ID of the secret."
+              }
+            },
+            "resourceGroupName": {
+              "type": "string",
+              "value": "[resourceGroup().name]",
+              "metadata": {
+                "description": "The name of the resource group the secret was created in."
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')))]"
+      ]
+    },
+    {
+      "condition": "[and(not(empty(parameters('keyVaultName'))), not(empty(parameters('storageAccountConnectionString'))))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('{0}-secret-accountName', deployment().name)]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "keyVaultName": {
+            "value": "[parameters('keyVaultName')]"
+          },
+          "name": {
+            "value": "[parameters('storageAccountConnectionString')]"
+          },
+          "value": {
+            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix={2}', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name')), listKeys(resourceId('Microsoft.Storage/storageAccounts', if(greater(length(variables('name')), 24), substring(variables('name'), 0, 24), variables('name'))), '2022-05-01').keys[0].value, environment().suffixes.storage)]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.11.1.770",
+              "templateHash": "7304298555457891820"
+            }
+          },
+          "parameters": {
+            "keyVaultName": {
+              "type": "string",
+              "metadata": {
+                "description": "Conditional. The name of the parent key vault. Required if the template is used in a standalone deployment."
+              }
+            },
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. The name of the secret."
+              }
+            },
+            "value": {
+              "type": "secureString",
+              "metadata": {
+                "description": "Required. The value of the secret. NOTE: \"value\" will never be returned from the service, as APIs using this model are is intended for internal use in ARM deployments. Users should use the data-plane REST service for interaction with vault secrets."
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2022-07-01",
+              "name": "[format('{0}/{1}', parameters('keyVaultName'), parameters('name'))]",
+              "properties": {
+                "value": "[parameters('value')]"
+              }
+            }
+          ],
+          "outputs": {
+            "name": {
+              "type": "string",
+              "value": "[parameters('name')]",
+              "metadata": {
+                "description": "The name of the secret."
+              }
+            },
+            "resourceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('name'))]",
+              "metadata": {
+                "description": "The resource ID of the secret."
+              }
+            },
+            "resourceGroupName": {
+              "type": "string",
+              "value": "[resourceGroup().name]",
+              "metadata": {
+                "description": "The name of the resource group the secret was created in."
+              }
+            }
+          }
         }
       },
       "dependsOn": [
