@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "11854171180552020252"
+      "templateHash": "6070827400940126277"
     }
   },
   "parameters": {
@@ -43,6 +43,20 @@
       "defaultValue": [],
       "metadata": {
         "description": "Optional. Locations enabled for the Cosmos DB account."
+      }
+    },
+    "maxThroughput": {
+      "type": "int",
+      "defaultValue": 4000,
+      "metadata": {
+        "description": "Optional. Represents maximum throughput, the resource can scale up to. Cannot be set together with `throughput`. If `throughput` is set to something else than -1, this autoscale setting is ignored."
+      }
+    },
+    "throughput": {
+      "type": "int",
+      "defaultValue": -1,
+      "metadata": {
+        "description": "Optional. Request Units per second (for example 10000). Cannot be set together with `maxThroughput`."
       }
     },
     "systemAssignedIdentity": {
@@ -573,7 +587,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "11078959652809048920"
+              "templateHash": "7909353032005788788"
             }
           },
           "parameters": {
@@ -688,7 +702,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.11.1.770",
-                      "templateHash": "8351251161510182559"
+                      "templateHash": "13739452568808998793"
                     }
                   },
                   "parameters": {
@@ -710,11 +724,18 @@
                         "description": "Required. Name of the container."
                       }
                     },
+                    "maxThroughput": {
+                      "type": "int",
+                      "defaultValue": 4000,
+                      "metadata": {
+                        "description": "Optional. Represents maximum throughput, the resource can scale up to. Cannot be set together with `throughput`. If `throughput` is set to something else than -1, this autoscale setting is ignored."
+                      }
+                    },
                     "throughput": {
                       "type": "int",
-                      "defaultValue": 400,
+                      "defaultValue": -1,
                       "metadata": {
-                        "description": "Optional. Request Units per second."
+                        "description": "Optional. Request Units per second (for example 10000). Cannot be set together with `maxThroughput`."
                       }
                     },
                     "tags": {
@@ -779,7 +800,7 @@
                             "kind": "[parameters('kind')]"
                           }
                         },
-                        "options": "[if(contains(reference(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccountName')), '2022-08-15').capabilities, createObject('name', 'EnableServerless')), null(), createObject('throughput', parameters('throughput')))]"
+                        "options": "[if(contains(reference(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccountName')), '2022-08-15').capabilities, createObject('name', 'EnableServerless')), null(), createObject('throughput', parameters('throughput'), 'maxThroughput', parameters('maxThroughput')))]"
                       }
                     }
                   ],
@@ -861,6 +882,12 @@
           },
           "name": {
             "value": "[parameters('gremlinDatabases')[copyIndex()].name]"
+          },
+          "throughput": {
+            "value": "[parameters('throughput')]"
+          },
+          "maxThroughput": {
+            "value": "[parameters('maxThroughput')]"
           },
           "graphs": {
             "value": "[if(contains(parameters('gremlinDatabases')[copyIndex()], 'graphs'), parameters('gremlinDatabases')[copyIndex()].graphs, createArray())]"
