@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - "bicep/*"
+      - "bicep/modules_bicep/**/*"
       - "!bicep/modules/**"
 
   workflow_dispatch: #Manual execution will be good for debugging

@@ -8,6 +8,7 @@ on:
   push:
     paths:
       - "bicep/main.bicep"
+      - "bicep/modules_bicep/**/*"
       - "!bicep/modules/**/*"
       - ".github/workflows_dep/parameters.json"
 
@@ -15,6 +16,7 @@ on:
     branches: [main]
     paths:
       - "bicep/**/*"
+      - "bicep/modules_bicep/**/*"
       - "!bicep/modules/**/*"
       - ".github/workflows_dep/parameters.json"
 
@@ -234,7 +236,7 @@ jobs:
             DEPNAME='Dep${{ github.run_number }}'
             PARAMS='${{ steps.imperitiveparams.outputs.PARAMOVERRIDES }} applicationClientId=${{ secrets.STAMP_CLIENT_ID }} applicationClientSecret=${{ secrets.STAMP_CLIENT_SECRET }} applicationId=${{ secrets.STAMP_APPLICATION_OID }}'
             echo $PARAMS
-            az deployment group validate -f main.bicep -g $RESOURCE_GROUP -p ${{ env.ParamFilePath }} -p $PARAMS --verbose
+            az deployment group validate -f bicep/main.bicep -g $RESOURCE_GROUP -p ${{ env.ParamFilePath }} -p $PARAMS --verbose
 
       - name: What If
         uses: Azure/cli@1.0.4
