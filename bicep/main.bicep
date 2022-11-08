@@ -21,7 +21,7 @@ param applicationClientId string
 param applicationClientSecret string
 
 @description('Used to name all resources')
-var controlPlane  = 'ctlplane'
+var commonResources  = 'common'
 
 @description('Optional. Customer Managed Encryption Key.')
 param cmekConfiguration object = {
@@ -42,9 +42,9 @@ param cmekConfiguration object = {
 
 // Create a Managed User Identity for the Cluster
 module clusterIdentity 'br:osdubicep.azurecr.io/public/user-managed-identity:1.0.1' = {
-  name: '${controlPlane}-user-managed-identity'
+  name: '${commonResources}-user-managed-identity'
   params: {
-    resourceName: controlPlane
+    resourceName: commonResources
     location: location
 
     // Assign Tags
@@ -65,9 +65,9 @@ module clusterIdentity 'br:osdubicep.azurecr.io/public/user-managed-identity:1.0
 */
 
 module logAnalytics 'br:osdubicep.azurecr.io/public/log-analytics:1.0.4' = {
-  name: '${controlPlane}-log-analytics'
+  name: '${commonResources}-log-analytics'
   params: {
-    resourceName: controlPlane
+    resourceName: commonResources
     location: location
 
     // Assign Tags
@@ -104,9 +104,9 @@ module logAnalytics 'br:osdubicep.azurecr.io/public/log-analytics:1.0.4' = {
 */
 
 module keyvault './modules/public/azure-keyvault/main.bicep' = {
-  name: '${controlPlane}-azure-keyvault'
+  name: '${commonResources}-azure-keyvault'
   params: {
-    resourceName: controlPlane
+    resourceName: commonResources
     location: location
     
     // Assign Tags
@@ -256,7 +256,7 @@ var privateLinkSettings = enablePrivateLink ? {
 
 // Create Virtual Network (If Not BYO)
 module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = if (virtualNetworkNewOrExisting == 'new') {
-  name: '${controlPlane}-virtual-network'
+  name: '${commonResources}-virtual-network'
   params: {
     resourceName: virtualNetworkName
     location: location
@@ -317,9 +317,9 @@ module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = if (virt
 */
 
 module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.2' = {
-  name: '${controlPlane}-container-registry'
+  name: '${commonResources}-container-registry'
   params: {
-    resourceName: controlPlane
+    resourceName: commonResources
     location: location
 
     // Assign Tags
@@ -361,9 +361,9 @@ var storageAccountType = 'Standard_LRS'
 
 // Create Storage Account
 module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
-  name: '${controlPlane}-azure-storage'
+  name: '${commonResources}-azure-storage'
   params: {
-    resourceName: controlPlane
+    resourceName: commonResources
     location: location
 
     // Assign Tags
@@ -417,9 +417,9 @@ module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
 */
 
 module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.4' = {
-  name: '${controlPlane}-cosmos-db'
+  name: '${commonResources}-cosmos-db'
   params: {
-    resourceName: controlPlane
+    resourceName: commonResources
     resourceLocation: location
 
     // Assign Tags
