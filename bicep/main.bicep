@@ -97,7 +97,8 @@ var commonLayerConfig = {
   }
   database: {
     name: 'graph-db'
-    throughput: 400
+    throughput: 2000
+    backup: 'Continuous'
     graphs: [
       {
         name: 'Entitlements'
@@ -479,7 +480,7 @@ module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
  \______| | _| `._____/__/     \__\ | _|      |__|  |__| 
 */
 
-module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.4' = {
+module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.5' = {
   name: '${commonLayerConfig.name}-cosmos-db'
   params: {
     resourceName: commonLayerConfig.name
@@ -503,9 +504,8 @@ module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.4' = {
         graphs: commonLayerConfig.database.graphs
       }
     ]
-
-    // Hook up Multiple Region Write (can't be used with Continous Backup)
-    backupPolicyType: 'Continuous'
+    throughput: commonLayerConfig.database.throughput
+    backupPolicyType: commonLayerConfig.database.backup
 
     // Assign RBAC
     roleAssignments: [
@@ -540,8 +540,6 @@ module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.4' = {
     databaseConnectionStringSecretName: commonLayerConfig.secrets.cosmosConnectionString
   }
 }
-
-
 
 
 // /*
