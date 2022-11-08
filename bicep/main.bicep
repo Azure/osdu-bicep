@@ -287,7 +287,7 @@ module keyvault 'br:osdubicep.azurecr.io/public/azure-keyvault:1.0.3' = {
   }
 }
 
-module keyvaultSecrets './modules/keyvault_secrets.bicep' = {
+module keyvaultSecrets './modules_private/keyvault_secrets.bicep' = {
   name: '${commonLayerConfig.name}-log-analytics-secrets'
   params: {
     // Persist Secrets to Vault
