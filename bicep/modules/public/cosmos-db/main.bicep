@@ -25,7 +25,11 @@ param multiwriteRegions array = [
   */
 ]
 
+@description('Optional. Represents maximum throughput, the resource can scale up to. Cannot be set together with `throughput`. If `throughput` is set to something else than -1, this autoscale setting is ignored.')
+param maxThroughput int = 4000
 
+@description('Optional. Request Units per second (for example 10000). Cannot be set together with `maxThroughput`.')
+param throughput int = -1
 
 @description('Optional. Enables system assigned managed identity on the resource.')
 param systemAssignedIdentity bool = false
@@ -323,6 +327,7 @@ module databaseAccount_sqlDatabases '.bicep/sql_database.bicep' = [for sqlDataba
     databaseAccountName: databaseAccount.name
     name: sqlDatabase.name
     containers: contains(sqlDatabase, 'containers') ? sqlDatabase.containers : []
+
     enableDefaultTelemetry: enableReferencedModulesTelemetry
   }
 }]
@@ -332,6 +337,8 @@ module databaseAccount_gremlinDatabases './.bicep/gremlin_database.bicep' = [for
   params: {
     databaseAccountName: databaseAccount.name
     name: gremlinDatabase.name
+    throughput: throughput
+    maxThroughput: maxThroughput
     graphs: contains(gremlinDatabase, 'graphs') ? gremlinDatabase.graphs : []
     enableDefaultTelemetry: enableReferencedModulesTelemetry
   }
