@@ -47,6 +47,13 @@ param subnetAddressPrefix string = '10.1.0.0/24'
 @description('Feature Flag on Private Link')
 param enablePrivateLink bool = false
 
+@description('List of Data Partitions')
+param partitions array = [
+  {
+    name: 'opendes'
+  }
+]
+
 
 /////////////////
 // Security Blade 
@@ -63,7 +70,7 @@ param cmekConfiguration object = {
 // Common Resources Configuration 
 /////////////////////////////////
 var commonLayerConfig = {
-  name: 'commonresources'
+  name: 'common'
   displayName: 'Common Resources'
   secrets: {
     tenantId: 'tenant-id'
@@ -109,6 +116,201 @@ var commonLayerConfig = {
       }
     ]
   }
+}
+
+/////////////////////////////////
+// Data Partition Configuration 
+/////////////////////////////////
+var partitionLayerConfig = {
+  name: 'partition'
+  displayName: 'Data Partition Resources'
+  secrets: {
+    storageAccountName: 'storage'
+    storageAccountKey: 'key'
+    cosmosConnectionString: 'cosmos-connection'
+    cosmosEndpoint: 'cosmos-endpoint'
+    cosmosPrimaryKey: 'cosmos-primary-key'
+  }
+  storage: {
+    sku: 'Standard_LRS'
+    containers: [
+      'legal-service-azure-configuration'
+      'opendes'
+      'osdu-wks-mappings'
+      'wdms-osdu'
+      'file-staging-area'
+      'file-persistent-area'
+    ]
+  }
+  database: {
+    name: 'osdu-db'
+    throughput: 12000
+    backup: 'Continuous'
+    collections: [
+      {
+        name: 'LegalTag'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/id'
+        ]
+      }
+      {
+        name: 'StorageRecord'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/id'
+        ]
+      }
+      {
+        name: 'StorageSchema'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/kind'
+        ]
+      }
+      {
+        name: 'TenantInfo'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/id'
+        ]
+      }
+      {
+        name: 'UserInfo'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/id'
+        ]
+      }
+      {
+        name: 'Authority'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/id'
+        ]
+      }
+      {
+        name: 'EntityType'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/id'
+        ]
+      }
+      {
+        name: 'SchemaInfo'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/partitionId'
+        ]
+      }
+      {
+        name: 'Source'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/id'
+        ]
+      }
+      {
+        name: 'RegisterAction'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/dataPartitionId'
+        ]
+      }
+      {
+        name: 'RegisterDdms'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/dataPartitionId'
+        ]
+      }
+      {
+        name: 'RegisterSubscription'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/dataPartitionId'
+        ]
+      }
+      {
+        name: 'IngestionStrategy'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/workflowType'
+        ]
+      }
+      {
+        name: 'RelationshipStatus'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/id'
+        ]
+      }
+      {
+        name: 'MappingInfo'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/sourceSchemaKind'
+        ]
+      }
+      {
+        name: 'FileLocationInfo'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/id'
+        ]
+      }
+      {
+        name: 'WorkflowCustomOperatorInfo'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/operatorId'
+        ]
+      }
+      {
+        name: 'WorkflowV2'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/partitionKey'
+        ]
+      }
+      {
+        name: 'WorkflowRunV2'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/partitionKey'
+        ]
+      }
+      {
+        name: 'WorkflowCustomOperatorV2'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/partitionKey'
+        ]
+      }
+      {
+        name: 'WorkflowTasksSharingInfoV2'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/partitionKey'
+        ]
+      }
+      {
+        name: 'Status'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/correlationId'
+        ]
+      }
+      {
+        name: 'DataSetDetails'
+        automaticIndexing: true
+        partitionKeyPaths: [
+          '/correlationId'
+        ]
+      }
+    ]
+  }
+
 }
 
 
@@ -407,7 +609,6 @@ module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.2' = {
 |_______/       |__|      \______/  | _| `._____/__/     \__\ \______| |_______|                                                                 
 */
 
-// Create Storage Account
 module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
   name: '${commonLayerConfig.name}-azure-storage'
   params: {
@@ -532,3 +733,108 @@ module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.5' = {
 // | _|    /__/     \__\ | _| `._____|   |__|     |__|     |__|     |__|  \______/  |__| \__| |_______/    
                                      
 // */
+
+module partitionStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = [for (partition, index) in partitions: {
+  name: '${partitionLayerConfig.name}-azure-storage-${index}'
+  params: {
+    resourceName: 'data${index}${uniqueString(partition.name)}'
+    location: location
+
+    // Assign Tags
+    tags: {
+      layer: partitionLayerConfig.displayName
+      partition: partition.name
+      purpose: 'data'
+    }
+
+    // Hook up Diagnostics
+    diagnosticWorkspaceId: logAnalytics.outputs.id
+
+    // Configure Service
+    sku: partitionLayerConfig.storage.sku
+    containers: partitionLayerConfig.storage.containers
+
+    // Assign RBAC
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: 'Contributor'
+        principalIds: [
+          stampIdentity.outputs.principalId
+          applicationClientId
+        ]
+        principalType: 'ServicePrincipal'
+      }
+    ]
+
+    // Hookup Private Links
+    privateLinkSettings: privateLinkSettings
+
+    // Hookup Customer Managed Encryption Key
+    cmekConfiguration: cmekConfiguration
+
+    // Persist Secrets to Vault
+    keyVaultName: keyvault.outputs.name
+    storageAccountSecretName: '${partition.name}-${partitionLayerConfig.secrets.storageAccountName}'
+    storageAccountKeySecretName: '${partition.name}-${partitionLayerConfig.secrets.storageAccountKey}'
+  }
+}]
+
+module partitionDb 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.5' = [for (partition, index) in partitions: {
+  name: '${partitionLayerConfig.name}-cosmos-db-${index}'
+  params: {
+    resourceName: 'data${index}${uniqueString(partition.name)}'
+    resourceLocation: location
+
+    // Assign Tags
+    tags: {
+      layer: partitionLayerConfig.displayName
+      partition: partition.name
+      purpose: 'data'
+    }
+
+    // Hook up Diagnostics
+    diagnosticWorkspaceId: logAnalytics.outputs.id
+
+    // Configure Service
+    sqlDatabases: [
+      {
+        name: 'db01'
+        containers: []
+      }
+    ]
+    throughput: partitionLayerConfig.database.throughput
+    backupPolicyType: partitionLayerConfig.database.backup
+
+    // Assign RBAC
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: 'Contributor'
+        principalIds: [
+          stampIdentity.outputs.principalId
+          applicationClientId
+        ]
+        principalType: 'ServicePrincipal'
+      }
+    ]
+
+    // Hookup Private Links
+    privateLinkSettings: privateLinkSettings
+
+    // Hookup Customer Managed Encryption Key
+    systemAssignedIdentity: false
+    userAssignedIdentities: !empty(cmekConfiguration.identityId) ? {
+      '${stampIdentity.outputs.id}': {}
+      '${cmekConfiguration.identityId}': {}
+    } : {
+      '${stampIdentity.outputs.id}': {}
+    }
+    defaultIdentity: !empty(cmekConfiguration.identityId) ? cmekConfiguration.identityId : ''
+    kvKeyUri: !empty(cmekConfiguration.kvUrl) && !empty(cmekConfiguration.keyName) ? '${cmekConfiguration.kvUrl}/${cmekConfiguration.keyName}' : ''
+
+    // Persist Secrets to Vault
+    keyVaultName: keyvault.outputs.name
+    databaseEndpointSecretName: '${partition.name}-${partitionLayerConfig.secrets.cosmosEndpoint}'
+    databasePrimaryKeySecretName: '${partition.name}-${partitionLayerConfig.secrets.cosmosPrimaryKey}'
+    databaseConnectionStringSecretName: '${partition.name}-${partitionLayerConfig.secrets.cosmosConnectionString}'
+  }
+}]
