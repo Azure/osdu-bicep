@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "6070827400940126277"
+      "templateHash": "15792969711685235072"
     }
   },
   "parameters": {
@@ -587,7 +587,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "7909353032005788788"
+              "templateHash": "8851067138945343591"
             }
           },
           "parameters": {
@@ -669,7 +669,7 @@
               },
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2020-10-01",
-              "name": "[format('{0}-{1}-graph-{2}', deployment().name, parameters('name'), parameters('containers')[copyIndex()].name)]",
+              "name": "[format('{0}-{1}-sql-{2}', deployment().name, parameters('name'), copyIndex())]",
               "properties": {
                 "expressionEvaluationOptions": {
                   "scope": "inner"
