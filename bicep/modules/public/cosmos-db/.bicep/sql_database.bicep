@@ -48,8 +48,8 @@ resource sqlDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-08
   }
 }
 
-module container 'sql_container.bicep' = [for container in containers: {
-  name: '${deployment().name}-${sqlDatabase.name}-graph-${container.name}'
+module container 'sql_container.bicep' = [for (container, index) in containers: {
+  name: '${deployment().name}-${sqlDatabase.name}-sql-${index}'
   params: {
     databaseAccountName: databaseAccountName
     sqlDatabaseName: name
