@@ -9,6 +9,7 @@
 @description('Specify the Azure region to place the application definition.')
 param location string = resourceGroup().location
 
+
 /////////////////
 // Identity Blade 
 /////////////////
@@ -44,8 +45,10 @@ param subnetName string = 'NodeSubnet'
 @description('Subnet address prefix')
 param subnetAddressPrefix string = '10.1.0.0/24'
 
-@description('Feature Flag on Private Link')
-param enablePrivateLink bool = false
+
+///////////////////////
+// Configuration Blade 
+///////////////////////
 
 @description('List of Data Partitions')
 param partitions array = [
@@ -54,10 +57,17 @@ param partitions array = [
   }
 ]
 
+@allowed([
+  'CostOptimised'
+  'Standard'
+  'HighSpec'
+])
+@description('The Cluster Sizing')
+param ClusterSize string = 'CostOptimised'
 
-/////////////////
-// Security Blade 
-/////////////////
+@description('Feature Flag on Private Link')
+param enablePrivateLink bool = false
+
 @description('Optional. Customer Managed Encryption Key.')
 param cmekConfiguration object = {
   kvUrl: ''
@@ -310,7 +320,14 @@ var partitionLayerConfig = {
       }
     ]
   }
+}
 
+/////////////////////////////////
+// Service Resources Configuration 
+/////////////////////////////////
+var serviceLayerConfig = {
+  name: 'service'
+  displayName: 'Service Resources'
 }
 
 
@@ -838,3 +855,45 @@ module partitionDb 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.5' = [for (part
     databaseConnectionStringSecretName: '${partition.name}-${partitionLayerConfig.secrets.cosmosConnectionString}'
   }
 }]
+
+
+/*
+ __  ___  __    __  .______    _______ .______      .__   __.  _______ .___________. _______     _______.
+|  |/  / |  |  |  | |   _  \  |   ____||   _  \     |  \ |  | |   ____||           ||   ____|   /       |
+|  '  /  |  |  |  | |  |_)  | |  |__   |  |_)  |    |   \|  | |  |__   `---|  |----`|  |__     |   (----`
+|    <   |  |  |  | |   _  <  |   __|  |      /     |  . `  | |   __|      |  |     |   __|     \   \    
+|  .  \  |  `--'  | |  |_)  | |  |____ |  |\  \----.|  |\   | |  |____     |  |     |  |____.----)   |   
+|__|\__\  \______/  |______/  |_______|| _| `._____||__| \__| |_______|    |__|     |_______|_______/    
+*/
+
+
+
+module cluster 'modules_private/aks_cluster.bicep' = {
+  name: '${serviceLayerConfig.name}-cluster'
+  params: {
+    // Basic Details
+    resourceName: serviceLayerConfig.name
+    location: location
+
+    // Assign Tags
+    tags: {
+      layer: serviceLayerConfig.displayName
+    }
+
+    aad_tenant_id: subscription().tenantId
+
+    // Configure Linking Items
+    subnetId: virtualNetworkNewOrExisting != 'new' ? subnetId : network.outputs.subnetIds[0] 
+    identityId: stampIdentity.outputs.id
+    workspaceId: logAnalytics.outputs.id
+
+    // Configure NodePools
+    ClusterSize: ClusterSize
+
+    // Configure Add Ons
+    enable_aad: true
+    workloadIdentityEnabled: true
+    keyvaultEnabled: true
+    fluxGitOpsAddon:false
+  }
+}
