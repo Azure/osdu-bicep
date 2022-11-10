@@ -30,10 +30,6 @@ param applicationClientSecret string
 @description('Name of the Virtual Network')
 param virtualNetworkName string = 'central-spoke-vnet'
 
-@allowed([
-  'new'
-  'existing'
-])
 @description('Boolean indicating whether the VNet is new or existing')
 param virtualNetworkNewOrExisting string = 'new'
 
