@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.12.1.58429",
-      "templateHash": "17493633964549301065"
+      "version": "0.12.40.16777",
+      "templateHash": "6171753156867789622"
     }
   },
   "parameters": {
@@ -91,7 +91,7 @@
       "name": "[format('{0}/{1}', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')), parameters('configObjects').configs[copyIndex()].key)]",
       "properties": {
         "value": "[parameters('configObjects').configs[copyIndex()].value]",
-        "contentType": "[parameters('contentType')]"
+        "contentType": "[parameters('configObjects').configs[copyIndex()].contentType]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.AppConfiguration/configurationStores', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]"
@@ -146,8 +146,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.12.1.58429",
-              "templateHash": "8194005421457038518"
+              "version": "0.12.40.16777",
+              "templateHash": "5527882430529152316"
             }
           },
           "parameters": {

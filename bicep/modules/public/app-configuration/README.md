@@ -4,7 +4,10 @@ This module deploys an App Configuration service.
 
 ## Description
 
-{{ Add detailed description for the module. }}
+This module supports the following features
+
+- key-value pairs
+- keyValault references (refer to Example 3)
 
 ## Parameters
 
@@ -56,6 +59,36 @@ module configStore 'br:osdubicep.azurecr.io/bicep/modules/public/app-configurati
         {
           key: 'Hello'
           value: 'World'
+        }
+      ]
+    }
+  }
+}
+```
+
+### Example 3
+
+```bicep
+module ac 'br:osdubicep.azurecr.io/bicep/modules/public/app-configuration:1.0.2' = {
+  name: 'azure_app_configuration'
+  params: {
+    resourceName: 'ac${unique(resourceGroup().name)}'
+    location: 'southcentralus'
+    enableDeleteLock: true
+    configObjects: {
+      configs: [
+        {
+          key: 'myKey'
+          value: 'myValue'
+        }
+        {
+          key: 'keyVaultref'
+          value: string(
+            {
+              uri: 'keyVaultSecretURL'
+            }
+          )
+          contentType: 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8'
         }
       ]
     }

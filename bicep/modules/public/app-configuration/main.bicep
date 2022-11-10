@@ -61,7 +61,7 @@ resource configStoreKeyValue 'Microsoft.AppConfiguration/configurationStores/key
   name: config.key
   properties: {
     value: config.value
-    contentType: contentType
+    contentType: config.contentType
   }
 }]
 

@@ -6,7 +6,7 @@
   },
   "parameters": {
     "resourceName": {
-      "value": "osdu"
+      "value": "osdubicep"
     }
   }
 }

@@ -21,6 +21,15 @@ module ac '../main.bicep' = {
           key: 'myKey'
           value: 'myValue'
         }
+        {
+          key: 'keyVaultref'
+          value: string(
+            {
+              uri: 'keyVaultSecretURL'
+            }
+          )
+          contentType: 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8'
+        }
       ]
     }
   }
