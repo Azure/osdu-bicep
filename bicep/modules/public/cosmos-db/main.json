@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "15792969711685235072"
+      "templateHash": "18062386774176591026"
     }
   },
   "parameters": {
@@ -573,6 +573,12 @@
           "name": {
             "value": "[parameters('sqlDatabases')[copyIndex()].name]"
           },
+          "throughput": {
+            "value": "[parameters('throughput')]"
+          },
+          "maxThroughput": {
+            "value": "[parameters('maxThroughput')]"
+          },
           "containers": {
             "value": "[if(contains(parameters('sqlDatabases')[copyIndex()], 'containers'), parameters('sqlDatabases')[copyIndex()].containers, createArray())]"
           },
@@ -587,7 +593,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "8851067138945343591"
+              "templateHash": "7157754146262647090"
             }
           },
           "parameters": {
@@ -610,11 +616,18 @@
                 "description": "Optional. Array of containers to deploy in the SQL database."
               }
             },
-            "throughput": {
+            "maxThroughput": {
               "type": "int",
               "defaultValue": 400,
               "metadata": {
-                "description": "Optional. Request units per second."
+                "description": "Optional. Represents maximum throughput, the resource can scale up to. Cannot be set together with `throughput`. If `throughput` is set to something else than -1, this autoscale setting is ignored."
+              }
+            },
+            "throughput": {
+              "type": "int",
+              "defaultValue": -1,
+              "metadata": {
+                "description": "Optional. Request Units per second (for example 10000). Cannot be set together with `maxThroughput`."
               }
             },
             "tags": {
@@ -656,10 +669,10 @@
               "name": "[format('{0}/{1}', parameters('databaseAccountName'), parameters('name'))]",
               "tags": "[parameters('tags')]",
               "properties": {
+                "options": "[if(contains(reference(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccountName')), '2022-08-15').capabilities, createObject('name', 'EnableServerless')), createObject(), createObject('autoscaleSettings', if(equals(parameters('throughput'), -1), createObject('maxThroughput', parameters('maxThroughput')), null()), 'throughput', if(not(equals(parameters('throughput'), -1)), parameters('throughput'), null())))]",
                 "resource": {
                   "id": "[parameters('name')]"
-                },
-                "options": "[if(contains(reference(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccountName')), '2022-08-15').capabilities, createObject('name', 'EnableServerless')), null(), createObject('throughput', parameters('throughput')))]"
+                }
               }
             },
             {
@@ -702,7 +715,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.11.1.770",
-                      "templateHash": "13739452568808998793"
+                      "templateHash": "9396199484594553158"
                     }
                   },
                   "parameters": {
@@ -722,13 +735,6 @@
                       "type": "string",
                       "metadata": {
                         "description": "Required. Name of the container."
-                      }
-                    },
-                    "maxThroughput": {
-                      "type": "int",
-                      "defaultValue": 4000,
-                      "metadata": {
-                        "description": "Optional. Represents maximum throughput, the resource can scale up to. Cannot be set together with `throughput`. If `throughput` is set to something else than -1, this autoscale setting is ignored."
                       }
                     },
                     "throughput": {
@@ -800,7 +806,7 @@
                             "kind": "[parameters('kind')]"
                           }
                         },
-                        "options": "[if(contains(reference(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccountName')), '2022-08-15').capabilities, createObject('name', 'EnableServerless')), null(), createObject('throughput', parameters('throughput'), 'maxThroughput', parameters('maxThroughput')))]"
+                        "options": "[if(or(contains(reference(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccountName')), '2022-08-15').capabilities, createObject('name', 'EnableServerless')), equals(parameters('throughput'), -1)), null(), createObject('throughput', parameters('throughput')))]"
                       }
                     }
                   ],
@@ -903,7 +909,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "14533062699228050411"
+              "templateHash": "142069350192373083"
             }
           },
           "parameters": {
@@ -935,7 +941,7 @@
             },
             "maxThroughput": {
               "type": "int",
-              "defaultValue": 4000,
+              "defaultValue": 400,
               "metadata": {
                 "description": "Optional. Represents maximum throughput, the resource can scale up to. Cannot be set together with `throughput`. If `throughput` is set to something else than -1, this autoscale setting is ignored."
               }
