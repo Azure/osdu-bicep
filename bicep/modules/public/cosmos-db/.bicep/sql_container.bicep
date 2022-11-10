@@ -7,9 +7,6 @@ param sqlDatabaseName string
 @description('Required. Name of the container.')
 param name string
 
-@description('Optional. Represents maximum throughput, the resource can scale up to. Cannot be set together with `throughput`. If `throughput` is set to something else than -1, this autoscale setting is ignored.')
-param maxThroughput int = 4000
-
 @description('Optional. Request Units per second (for example 10000). Cannot be set together with `maxThroughput`.')
 param throughput int = -1
 
@@ -62,9 +59,8 @@ resource container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/container
         kind: kind
       }
     }
-    options: contains(databaseAccount.properties.capabilities, { name: 'EnableServerless' }) ? null : {
+    options: contains(databaseAccount.properties.capabilities, { name: 'EnableServerless' }) || throughput == -1 ? null : {
       throughput: throughput
-      maxThroughput: maxThroughput
     }
   }
 }

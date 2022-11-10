@@ -326,8 +326,9 @@ module databaseAccount_sqlDatabases '.bicep/sql_database.bicep' = [for sqlDataba
   params: {
     databaseAccountName: databaseAccount.name
     name: sqlDatabase.name
+    throughput: throughput
+    maxThroughput: maxThroughput
     containers: contains(sqlDatabase, 'containers') ? sqlDatabase.containers : []
-
     enableDefaultTelemetry: enableReferencedModulesTelemetry
   }
 }]
