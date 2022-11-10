@@ -518,7 +518,7 @@ module keyvaultSecrets './modules_private/keyvault_secrets.bicep' = {
 */
 
 var vnetId = {
-  // new: network.outputs.id
+  new: network.outputs.id
   existing: resourceId(virtualNetworkResourceGroup, 'Microsoft.Network/virtualNetworks', virtualNetworkName)
 }
 
