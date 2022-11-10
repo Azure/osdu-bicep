@@ -332,7 +332,7 @@ var userPoolPresets = {
   HighSpec : {
     vmSize: 'Standard_D8ds_v4'
     minCount: 8
-    maxCount: 24
+    maxCount: 20
     availabilityZones: [
       '1'
       '2'
@@ -342,7 +342,6 @@ var userPoolPresets = {
     osDiskSize: 0
     maxPods: 30
   }
-  
 }
 
 
@@ -391,7 +390,7 @@ var secondPoolPresets = {
     ]
     osDiskType: 'Managed'
     osDiskSize: 128
-    maxPods: 20
+    maxPods: 30
   }
   // 4 vCPU, 16 GiB RAM, 32 GiB SSD, (8000) IOPS, 128 GB Managed OS Disk
   HighSpec : {

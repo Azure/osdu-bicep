@@ -3,7 +3,9 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PARENT_DIR=`dirname $SCRIPT_DIR`
 
-AZURE_LOCATION="southcentralus"
+if [ -z $AZURE_LOCATION ]; then
+  AZURE_LOCATION="southcentralus"
+fi
 PREFIX="osdu"
 
 WHAT_IF=0
