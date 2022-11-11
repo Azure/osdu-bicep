@@ -63,7 +63,7 @@ param partitions array = [
   'HighSpec'
 ])
 @description('The Cluster Sizing')
-param ClusterSize string = 'Standard'
+param ClusterSize string = 'CostOptimised'
 
 @description('Feature Flag on Private Link')
 // param enablePrivateLink bool = true // TODO: Enable when Private Link is ready
@@ -518,7 +518,7 @@ module keyvaultSecrets './modules_private/keyvault_secrets.bicep' = {
 */
 
 var vnetId = {
-  new: network.outputs.id
+  new: virtualNetworkNewOrExisting == 'new' ? network.outputs.id : null
   existing: resourceId(virtualNetworkResourceGroup, 'Microsoft.Network/virtualNetworks', virtualNetworkName)
 }
 
