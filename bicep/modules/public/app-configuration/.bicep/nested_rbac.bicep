@@ -12,17 +12,17 @@ var builtInRoleNames = {
   'App Configuration Data Reader': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '516239f1-63e1-4d78-a4de-a74fb236a071')
 }
 
-resource ac 'Microsoft.AppConfiguration/configurationStores@2022-05-01' existing = {
+resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-05-01' existing = {
   name: last(split(resourceId, '/'))
 }
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for principalId in principalIds: {
-  name: guid(ac.name, principalId, roleDefinitionIdOrName)
+  name: guid(appConfiguration.name, principalId, roleDefinitionIdOrName)
   properties: {
     description: description
     roleDefinitionId: contains(builtInRoleNames, roleDefinitionIdOrName) ? builtInRoleNames[roleDefinitionIdOrName] : roleDefinitionIdOrName
     principalId: principalId
     principalType: !empty(principalType) ? principalType : null
   }
-  scope: ac
+  scope: appConfiguration
 }]

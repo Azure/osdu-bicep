@@ -33,12 +33,11 @@ This module supports the following features
 ### Example 1
 
 ```bicep
-module configStore 'br:osdubicep.azurecr.io/bicep/modules/public/app-configuration:1.0.2' = {
+module configStore 'br:osdubicep.azurecr.io/public/app-configuration:1.0.2' = {
   name: 'azure_app_config'
   params: {
     resourceName: 'ac${unique(resourceGroup().name)}'
     location: 'southcentralus'
-    configObjects: { configs: []}
   }
 }
 ```
@@ -46,20 +45,93 @@ module configStore 'br:osdubicep.azurecr.io/bicep/modules/public/app-configurati
 ### Example 2
 
 ```bicep
-module configStore 'br:osdubicep.azurecr.io/bicep/modules/public/app-configuration:1.0.2' = {
+// Feature Flag Sample
+var featureFlagKey = 'AFeatureFlag'
+var featureFlagDescription = 'This is a sample feature flag'
+var featureFlagLabel = 'development'
+
+// Key Vault Secret
+@description('Format should be https://{vault-name}.{vault-DNS-suffix}/secrets/{secret-name}/{secret-version}. Secret version is optional.')
+var kvSecret = 'https://akeyvault.vault.azure.net/secrets/asecret'
+var keyVaultRef = {
+  uri: kvSecret
+}
+
+//  Module --> Create Resource
+module app_config 'br:osdubicep.azurecr.io/public/app-configuration:1.0.2' = {
   name: 'azure_app_config'
   params: {
     resourceName: 'ac${unique(resourceGroup().name)}'
     location: 'southcentralus'
     
-    // Add secrets
-    configObjects: {
-      configs: [
-        {
-          key: 'Hello'
-          value: 'World'
+    keyValues: [
+      // Simple Key Value Pair
+      {
+        name: 'AValue'
+        value: 'Hello World'
+        contentType: 'text/plain'
+        label: 'development'
+        tags: {
+          service: 'worker'
         }
-      ]
+      }
+      // Key Vault Secret Reference
+      {
+        name: 'ASecret'
+        value: string(keyVaultRef)
+        contentType: 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8'
+        label: 'development'
+        tags: {
+          service: 'worker'
+        }
+      }
+      // Feature Flag Sample
+      {
+        name: '.appconfig.featureflag~2F${featureFlagKey}$${featureFlagLabel}'
+        value: string({
+        id: featureFlagKey
+        description: featureFlagDescription
+        enabled: true
+      })
+        contentType: 'application/vnd.microsoft.appconfig.ff+json;charset=utf-8'
+        tags: {
+          service: 'worker'
+        }
+      }
+    ]
+
+    // Add Role Assignment
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: 'App Configuration Data Reader'
+        principalIds: [
+          identity.outputs.principalId
+        ]
+        principalType: 'ServicePrincipal'
+      }
+    ]
+
+    // Enable Diagnostics
+    diagnosticWorkspaceId: logs.outputs.id
+
+    // Hook up the identity to the database
+    systemAssignedIdentity: false
+    userAssignedIdentities: {
+      '${identity.outputs.id}': { }
+      '/subscriptions/222222-2222-2222-2222-2222222222/resourcegroups/keep/providers/Microsoft.ManagedIdentity/userAssignedIdentities/aidentity': {}
+    }
+
+    // Enable Private Link
+    privateLinkSettings:{
+      vnetId: network.outputs.id
+      subnetId: network.outputs.subnetIds[0]
+    }
+
+    // Enable Customer Managed Encryption Key
+    cmekConfiguration: {
+      kvUrl: 'https://akeyvault.vault.azure.net'
+      keyName: 'akey'
+      identityId: '222222-2222-2222-2222-2222222222'
     }
   }
 }
