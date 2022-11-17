@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.11.1.770",
-      "templateHash": "10159052723775281602"
+      "version": "0.12.40.16777",
+      "templateHash": "6268049922518514330"
     }
   },
   "parameters": {
@@ -24,12 +24,17 @@
         "description": "Resource Location."
       }
     },
-    "enableDeleteLock": {
-      "type": "bool",
-      "defaultValue": false,
+    "lock": {
+      "type": "string",
+      "defaultValue": "NotSpecified",
       "metadata": {
-        "description": "Enable lock to prevent accidental deletion"
-      }
+        "description": "Optional. Specify the type of lock."
+      },
+      "allowedValues": [
+        "CanNotDelete",
+        "NotSpecified",
+        "ReadOnly"
+      ]
     },
     "tags": {
       "type": "object",
@@ -42,14 +47,50 @@
       "type": "string",
       "defaultValue": "Standard",
       "metadata": {
-        "description": "App Configuration SKU."
+        "description": "Optional. Pricing tier of App Configuration."
+      },
+      "allowedValues": [
+        "Free",
+        "Standard"
+      ]
+    },
+    "createMode": {
+      "type": "string",
+      "defaultValue": "Default",
+      "metadata": {
+        "description": "Optional. Indicates whether the configuration store need to be recovered."
+      },
+      "allowedValues": [
+        "Default",
+        "Recover"
+      ]
+    },
+    "disableLocalAuth": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Optional. Disables all authentication methods other than AAD authentication."
       }
     },
-    "configObjects": {
+    "systemAssignedIdentity": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Optional. Enables system assigned managed identity on the resource."
+      }
+    },
+    "userAssignedIdentities": {
       "type": "object",
       "defaultValue": {},
       "metadata": {
-        "description": "Specifies all configuration values {\"key\":\"\",\"value\":\"\"} wrapped in an object."
+        "description": "Optional. The ID(s) to assign to the resource."
+      }
+    },
+    "keyValues": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional. All Key / Values to create."
       }
     },
     "roleAssignments": {
@@ -58,10 +99,127 @@
       "metadata": {
         "description": "Optional. Array of objects that describe RBAC permissions, format { roleDefinitionResourceId (string), principalId (string), principalType (enum), enabled (bool) }. Ref: https://docs.microsoft.com/en-us/azure/templates/microsoft.authorization/roleassignments?tabs=bicep"
       }
+    },
+    "diagnosticWorkspaceId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Resource ID of the diagnostic log analytics workspace."
+      }
+    },
+    "diagnosticStorageAccountId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Resource ID of the diagnostic storage account."
+      }
+    },
+    "diagnosticEventHubAuthorizationRuleId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Resource ID of the diagnostic event hub authorization rule for the Event Hubs namespace in which the event hub should be created or streamed to."
+      }
+    },
+    "diagnosticEventHubName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Name of the diagnostic event hub within the namespace to which logs are streamed. Without this, an event hub is created for each log category."
+      }
+    },
+    "diagnosticLogsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 365,
+      "maxValue": 365,
+      "minValue": 0,
+      "metadata": {
+        "description": "Optional. Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely."
+      }
+    },
+    "logsToEnable": {
+      "type": "array",
+      "allowedValues": [
+        "HttpRequest",
+        "Audit"
+      ],
+      "defaultValue": [
+        "HttpRequest",
+        "Audit"
+      ],
+      "metadata": {
+        "description": "Optional. The name of logs that will be streamed."
+      }
+    },
+    "metricsToEnable": {
+      "type": "array",
+      "allowedValues": [
+        "AllMetrics"
+      ],
+      "defaultValue": [
+        "AllMetrics"
+      ],
+      "metadata": {
+        "description": "Optional. The name of metrics that will be streamed."
+      }
+    },
+    "cmekConfiguration": {
+      "type": "object",
+      "defaultValue": {
+        "kvUrl": "",
+        "keyName": "",
+        "identityId": ""
+      },
+      "metadata": {
+        "description": "Optional. Customer Managed Encryption Key."
+      }
+    },
+    "privateLinkSettings": {
+      "type": "object",
+      "defaultValue": {
+        "subnetId": "1",
+        "vnetId": "1"
+      },
+      "metadata": {
+        "description": "Settings Required to Enable Private Link"
+      }
     }
   },
   "variables": {
-    "name": "[format('ac-{0}{1}', replace(parameters('resourceName'), '-', ''), uniqueString(resourceGroup().id, parameters('resourceName')))]"
+    "copy": [
+      {
+        "name": "diagnosticsLogs",
+        "count": "[length(parameters('logsToEnable'))]",
+        "input": {
+          "category": "[parameters('logsToEnable')[copyIndex('diagnosticsLogs')]]",
+          "enabled": true,
+          "retentionPolicy": {
+            "enabled": true,
+            "days": "[parameters('diagnosticLogsRetentionInDays')]"
+          }
+        }
+      },
+      {
+        "name": "diagnosticsMetrics",
+        "count": "[length(parameters('metricsToEnable'))]",
+        "input": {
+          "category": "[parameters('metricsToEnable')[copyIndex('diagnosticsMetrics')]]",
+          "timeGrain": null,
+          "enabled": true,
+          "retentionPolicy": {
+            "enabled": true,
+            "days": "[parameters('diagnosticLogsRetentionInDays')]"
+          }
+        }
+      }
+    ],
+    "name": "[format('ac-{0}{1}', replace(parameters('resourceName'), '-', ''), uniqueString(resourceGroup().id, parameters('resourceName')))]",
+    "enableCMEK": "[if(and(and(not(empty(parameters('cmekConfiguration').kvUrl)), not(empty(parameters('cmekConfiguration').keyName))), not(empty(parameters('cmekConfiguration').identityId))), true(), false())]",
+    "identityType": "[if(parameters('systemAssignedIdentity'), 'SystemAssigned', if(not(empty(parameters('userAssignedIdentities'))), 'UserAssigned', 'None'))]",
+    "enablePrivateLink": "[and(not(equals(parameters('privateLinkSettings').vnetId, '1')), not(equals(parameters('privateLinkSettings').subnetId, '1')))]",
+    "privateEndpointName": "[format('{0}-PrivateEndpoint', variables('name'))]",
+    "publicDNSZoneForwarder": "azconfig.io",
+    "privateDnsZoneName": "[format('privatelink.{0}', variables('publicDNSZoneForwarder'))]"
   },
   "resources": [
     {
@@ -69,35 +227,242 @@
       "apiVersion": "2022-05-01",
       "name": "[if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name'))]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
       "sku": {
         "name": "[parameters('sku')]"
       },
-      "tags": "[parameters('tags')]"
+      "identity": "[if(not(empty(parameters('userAssignedIdentities'))), createObject('type', variables('identityType'), 'userAssignedIdentities', parameters('userAssignedIdentities')), createObject('type', variables('identityType')))]",
+      "properties": {
+        "createMode": "[parameters('createMode')]",
+        "disableLocalAuth": "[parameters('disableLocalAuth')]",
+        "encryption": "[if(variables('enableCMEK'), createObject('keyVaultProperties', createObject('identityClientId', parameters('cmekConfiguration').identityId, 'keyIdentifier', format('{0}/keys/{1}', parameters('cmekConfiguration').kvUrl, parameters('cmekConfiguration').keyName))), null())]"
+      }
     },
     {
-      "copy": {
-        "name": "configStoreKeyValue",
-        "count": "[length(parameters('configObjects').configs)]"
-      },
-      "type": "Microsoft.AppConfiguration/configurationStores/keyValues",
-      "apiVersion": "2022-05-01",
-      "name": "[format('{0}/{1}', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')), parameters('configObjects').configs[copyIndex()].key)]",
+      "condition": "[not(equals(parameters('lock'), 'NotSpecified'))]",
+      "type": "Microsoft.Authorization/locks",
+      "apiVersion": "2017-04-01",
+      "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]",
+      "name": "[format('{0}-{1}-lock', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')), parameters('lock'))]",
       "properties": {
-        "value": "[parameters('configObjects').configs[copyIndex()].value]",
-        "contentType": "[parameters('configObjects').configs[copyIndex()].contentType]"
+        "level": "[parameters('lock')]",
+        "notes": "[if(equals(parameters('lock'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot modify the resource or child resources.')]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.AppConfiguration/configurationStores', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]"
       ]
     },
     {
-      "condition": "[parameters('enableDeleteLock')]",
-      "type": "Microsoft.Authorization/locks",
-      "apiVersion": "2017-04-01",
+      "condition": "[or(or(or(not(empty(parameters('diagnosticStorageAccountId'))), not(empty(parameters('diagnosticWorkspaceId')))), not(empty(parameters('diagnosticEventHubAuthorizationRuleId')))), not(empty(parameters('diagnosticEventHubName'))))]",
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "apiVersion": "2021-05-01-preview",
       "scope": "[format('Microsoft.AppConfiguration/configurationStores/{0}', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]",
-      "name": "[format('{0}-lock', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]",
+      "name": "appconfig-diagnostics",
       "properties": {
-        "level": "CanNotDelete"
+        "storageAccountId": "[if(not(empty(parameters('diagnosticStorageAccountId'))), parameters('diagnosticStorageAccountId'), null())]",
+        "workspaceId": "[if(not(empty(parameters('diagnosticWorkspaceId'))), parameters('diagnosticWorkspaceId'), null())]",
+        "eventHubAuthorizationRuleId": "[if(not(empty(parameters('diagnosticEventHubAuthorizationRuleId'))), parameters('diagnosticEventHubAuthorizationRuleId'), null())]",
+        "eventHubName": "[if(not(empty(parameters('diagnosticEventHubName'))), parameters('diagnosticEventHubName'), null())]",
+        "metrics": "[variables('diagnosticsMetrics')]",
+        "logs": "[variables('diagnosticsLogs')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.AppConfiguration/configurationStores', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]"
+      ]
+    },
+    {
+      "condition": "[variables('enablePrivateLink')]",
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2020-06-01",
+      "name": "[variables('privateDnsZoneName')]",
+      "location": "global",
+      "properties": {}
+    },
+    {
+      "condition": "[variables('enablePrivateLink')]",
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2022-01-01",
+      "name": "[variables('privateEndpointName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "privateLinkServiceConnections": [
+          {
+            "name": "[variables('privateEndpointName')]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.AppConfiguration/configurationStores', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]",
+              "groupIds": [
+                "configurationStores"
+              ]
+            }
+          }
+        ],
+        "subnet": {
+          "id": "[parameters('privateLinkSettings').subnetId]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.AppConfiguration/configurationStores', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]"
+      ]
+    },
+    {
+      "condition": "[variables('enablePrivateLink')]",
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2022-01-01",
+      "name": "[format('{0}/dnsgroupname', variables('privateEndpointName'))]",
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "dnsConfig",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]",
+        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointName'))]"
+      ]
+    },
+    {
+      "condition": "[variables('enablePrivateLink')]",
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2020-06-01",
+      "name": "[format('{0}/{1}', variables('privateDnsZoneName'), 'link_to_vnet')]",
+      "location": "global",
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[parameters('privateLinkSettings').vnetId]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "configurationStore_keyValues",
+        "count": "[length(parameters('keyValues'))]"
+      },
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('{0}-keyvalues-{1}', deployment().name, copyIndex())]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "appConfigurationName": {
+            "value": "[if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name'))]"
+          },
+          "name": {
+            "value": "[parameters('keyValues')[copyIndex()].name]"
+          },
+          "value": {
+            "value": "[parameters('keyValues')[copyIndex()].value]"
+          },
+          "label": {
+            "value": "[if(contains(parameters('keyValues')[copyIndex()], 'label'), parameters('keyValues')[copyIndex()].label, '')]"
+          },
+          "contentType": {
+            "value": "[if(contains(parameters('keyValues')[copyIndex()], 'contentType'), parameters('keyValues')[copyIndex()].contentType, '')]"
+          },
+          "tags": {
+            "value": "[if(contains(parameters('keyValues')[copyIndex()], 'tags'), parameters('keyValues')[copyIndex()].tags, createObject())]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.12.40.16777",
+              "templateHash": "15817105414922447204"
+            }
+          },
+          "parameters": {
+            "name": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Name of the key."
+              }
+            },
+            "value": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Name of the value."
+              }
+            },
+            "label": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. Name of the Label."
+              }
+            },
+            "appConfigurationName": {
+              "type": "string",
+              "metadata": {
+                "description": "Conditional. The name of the parent app configuration store. Required if the template is used in a standalone deployment."
+              }
+            },
+            "contentType": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. The content type of the key-values value. Providing a proper content-type can enable transformations of values when they are retrieved by applications."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. Tags of the resource."
+              }
+            }
+          },
+          "variables": {
+            "keyValueName": "[if(empty(parameters('label')), parameters('name'), format('{0}${1}', parameters('name'), parameters('label')))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.AppConfiguration/configurationStores/keyValues",
+              "apiVersion": "2022-05-01",
+              "name": "[format('{0}/{1}', parameters('appConfigurationName'), variables('keyValueName'))]",
+              "properties": {
+                "contentType": "[parameters('contentType')]",
+                "tags": "[parameters('tags')]",
+                "value": "[parameters('value')]"
+              }
+            }
+          ],
+          "outputs": {
+            "name": {
+              "type": "string",
+              "value": "[variables('keyValueName')]",
+              "metadata": {
+                "description": "The name of the key values."
+              }
+            },
+            "resourceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.AppConfiguration/configurationStores/keyValues', parameters('appConfigurationName'), variables('keyValueName'))]",
+              "metadata": {
+                "description": "The resource ID of the key values."
+              }
+            },
+            "resourceGroupName": {
+              "type": "string",
+              "value": "[resourceGroup().name]",
+              "metadata": {
+                "description": "The resource group the batch account was deployed into."
+              }
+            }
+          }
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.AppConfiguration/configurationStores', if(greater(length(variables('name')), 50), substring(variables('name'), 0, 50), variables('name')))]"
@@ -139,8 +504,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.11.1.770",
-              "templateHash": "10797928167782607912"
+              "version": "0.12.40.16777",
+              "templateHash": "5527882430529152316"
             }
           },
           "parameters": {

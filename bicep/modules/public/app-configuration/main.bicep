@@ -142,9 +142,11 @@ resource configStore 'Microsoft.AppConfiguration/configurationStores@2022-05-01'
   sku: {
     name: sku
   }
-  identity: {
+  identity: !empty(userAssignedIdentities) ? {
     type: identityType
-    userAssignedIdentities: !empty(userAssignedIdentities) ? userAssignedIdentities : {}
+    userAssignedIdentities: userAssignedIdentities
+  } : {
+    type: identityType
   }
 
   properties: {
