@@ -1,10 +1,10 @@
+
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: podinfo
-  namespace: cluster-config
+  namespace: podinfo
 spec:
-  targetNamespace: podinfo
   releaseName: podinfo
   chart:
     spec:
@@ -12,7 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: podinfo
-        namespace: cluster-config
+        namespace: flux-system
   interval: 5m
   install:
     remediation:
@@ -20,7 +20,7 @@ spec:
   # Default values
   # https://github.com/stefanprodan/podinfo/blob/master/charts/podinfo/values.yaml
   values:
-    cache: redis-master.redis:6379
+    cache: tcp://redis-master.redis:6379
     ingress:
       enabled: true
       annotations:

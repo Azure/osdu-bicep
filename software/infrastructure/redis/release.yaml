@@ -3,7 +3,6 @@ kind: HelmRelease
 metadata:
   name: redis
 spec:
-  targetNamespace: redis
   releaseName: redis
   chart:
     spec:
@@ -11,6 +10,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
+        namespace: flux-system
       version: "16.x"
   interval: 1h0m0s
   install:

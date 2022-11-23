@@ -6,6 +6,3 @@ cluster:
 master:
   persistence:
     enabled: false
-
-volumePermissions:
-  enabled: true
