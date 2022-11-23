@@ -23,6 +23,11 @@ param applicationClientId string
 @secure()
 param applicationClientSecret string
 
+@description('Specify the AD Users or Groups that can manage the cluster.')
+param clusterAdminIds array = [
+  'df1df0e5-a243-42df-bccd-afc8e590539b'
+]
+
 
 /////////////////
 // Network Blade 
@@ -910,6 +915,7 @@ module cluster 'modules_private/aks_cluster.bicep' = {
 
     // Configure Add Ons
     enable_aad: true
+    admin_ids: clusterAdminIds
     workloadIdentityEnabled: true
     keyvaultEnabled: true
     fluxGitOpsAddon:true
