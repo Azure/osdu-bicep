@@ -7,7 +7,7 @@
 param aksName string
 
 @description('The namespace for flux.')
-param aksFluxAddOnReleaseNamespace string = 'flux-system'
+param aksFluxAddOnReleaseNamespace string = 'cluster-config'
 
 resource aks 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' existing = {
   name: aksName

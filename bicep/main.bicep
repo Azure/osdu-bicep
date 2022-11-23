@@ -931,10 +931,10 @@ module flux 'modules_private/flux_config_multi.bicep' = {
   params: {
     aksName: cluster.outputs.name
     aksFluxAddOnReleaseNamespace: cluster.outputs.fluxReleaseNamespace
-    fluxConfigName: 'setup'
-    fluxConfigRepo: fluxConfiguration
-    fluxConfigRepoBranch: fluxConfigRepoBranch
-    fluxRepoInfraPath: './software/infrastructure'
-    fluxRepoAppsPath: './software/apps'
+    // fluxConfigName: 'setup'
+    // fluxConfigRepo: fluxConfiguration
+    // fluxConfigRepoBranch: fluxConfigRepoBranch
+    // fluxRepoInfraPath: './software/infrastructure'
+    // fluxRepoAppsPath: './software/apps'
   }
 }
