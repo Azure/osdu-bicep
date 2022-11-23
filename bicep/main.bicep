@@ -919,15 +919,18 @@ module cluster 'modules_private/aks_cluster.bicep' = {
 
 //--------------Flux Config---------------
 @description('The Git Repository for the Gitops Configuration.')
-var fluxConfiguration = 'https://github.com/Azure/gitops-flux2-kustomize-helm-mt'
-var fluxConfigRepoBranch = 'main'
+var fluxConfiguration = 'https://github.com/azure/osdu-bicep'
+var fluxConfigRepoBranch = 'flux-setup'
 
 module flux 'modules_private/flux_config_multi.bicep' = {
   name: 'flux'
   params: {
     aksName: cluster.outputs.name
     aksFluxAddOnReleaseNamespace: cluster.outputs.fluxReleaseNamespace
+    fluxConfigName: 'setup'
     fluxConfigRepo: fluxConfiguration
     fluxConfigRepoBranch: fluxConfigRepoBranch
+    fluxRepoInfraPath: './software/infrastructure'
+    fluxRepoAppsPath: './software/apps'
   }
 }
