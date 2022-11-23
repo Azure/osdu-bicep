@@ -23,10 +23,8 @@ param applicationClientId string
 @secure()
 param applicationClientSecret string
 
-@description('Specify the AD Users or Groups that can manage the cluster.')
-param clusterAdminIds array = [
-  'df1df0e5-a243-42df-bccd-afc8e590539b'
-]
+@description('Optional: Specify the AD Users and/or Groups that can manage the cluster.')
+param clusterAdminIds array = []
 
 
 /////////////////

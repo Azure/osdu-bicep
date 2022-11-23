@@ -19,7 +19,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' exi
 
 
 @description('The Git Repository URL where your flux configuration is homed')
-param fluxConfigRepo string = '' //'https://github.com/Azure/gitops-flux2-kustomize-helm-mt' //'https://github.com/fluxcd/flux2-kustomize-helm-example'
+param fluxConfigRepo string = 'https://github.com/Azure/gitops-flux2-kustomize-helm-mt' //'https://github.com/Azure/gitops-flux2-kustomize-helm-mt' //'https://github.com/fluxcd/flux2-kustomize-helm-example'
 
 @description('The Git Repository Branch where your flux configuration is homed')
 param fluxConfigRepoBranch string = 'main'
