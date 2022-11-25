@@ -9,7 +9,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: osdu-bicep
-  path: ./apps/osdu-stamp/
+  path: ./software/apps/osdu-stamp/
   prune: true
   validation: client
   healthChecks:
