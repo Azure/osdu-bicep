@@ -350,7 +350,6 @@ var serviceLayerConfig = {
     'community.opengroup.org:5555/osdu/platform/system/storage/storage-v0-16-1:latest'
     'community.opengroup.org:5555/osdu/platform/system/file/file-v0-16-1:latest'
     'community.opengroup.org:5555/osdu/platform/system/indexer-service/indexer-service-v0-16-0:latest'
-    'community.opengroup.org:5555/osdu/platform/system/indexer-service/indexer-service-v0-16-0:latest'
     'community.opengroup.org:5555/osdu/platform/system/search-service/search-service-v0-16-1:latest'
   ]
 }
@@ -639,6 +638,16 @@ module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.2' = {
 
     // Hook up Private Links
     privateLinkSettings: privateLinkSettings
+  }
+}
+
+// Import Images
+module acrImport 'modules_private/acr_import.bicep' = if (!empty(serviceLayerConfig.imageNames)) {
+  name: 'imageImport'
+  params: {
+    acrName: registry.outputs.name
+    location: location
+    images: serviceLayerConfig.imageNames
   }
 }
 
@@ -932,15 +941,7 @@ module cluster 'modules_private/aks_cluster.bicep' = {
 }
 
 
-// Import Images
-module acrImport 'modules_private/acr_import.bicep' = if (!empty(serviceLayerConfig.imageNames)) {
-  name: 'imageImport'
-  params: {
-    acrName: registry.outputs.name
-    location: location
-    images: serviceLayerConfig.imageNames
-  }
-}
+
 
 
 //--------------Flux Config---------------
