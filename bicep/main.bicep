@@ -932,7 +932,7 @@ module flux 'modules_private/flux_config.bicep' = {
   params: {
     aksName: cluster.outputs.name
     aksFluxAddOnReleaseNamespace: cluster.outputs.fluxReleaseNamespace
-    fluxConfigName: 'osdu-stamp'
+    fluxConfigName: 'osdu-bicep'
     fluxConfigRepo: fluxConfiguration
     fluxConfigRepoBranch: fluxConfigRepoBranch
     fluxRepoPath: fluxRepoPath
