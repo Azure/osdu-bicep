@@ -342,6 +342,17 @@ var partitionLayerConfig = {
 var serviceLayerConfig = {
   name: 'service'
   displayName: 'Service Resources'
+  imageNames: [
+    'community.opengroup.org:5555/osdu/platform/system/partition/partition-v0-16-0:latest'
+    'community.opengroup.org:5555/osdu/platform/security-and-compliance/entitlements/entitlements-v0-16-0:latest'
+    'community.opengroup.org:5555/osdu/platform/security-and-compliance/legal/legal-v0-16-0:latest'
+    'community.opengroup.org:5555/osdu/platform/system/schema-service/schema-service-release-0-16:latest'
+    'community.opengroup.org:5555/osdu/platform/system/storage/storage-v0-16-1:latest'
+    'community.opengroup.org:5555/osdu/platform/system/file/file-v0-16-1:latest'
+    'community.opengroup.org:5555/osdu/platform/system/indexer-service/indexer-service-v0-16-0:latest'
+    'community.opengroup.org:5555/osdu/platform/system/indexer-service/indexer-service-v0-16-0:latest'
+    'community.opengroup.org:5555/osdu/platform/system/search-service/search-service-v0-16-1:latest'
+  ]
 }
 
 
@@ -917,6 +928,17 @@ module cluster 'modules_private/aks_cluster.bicep' = {
     workloadIdentityEnabled: true
     keyvaultEnabled: true
     fluxGitOpsAddon:true
+  }
+}
+
+
+// Import Images
+module acrImport 'modules_private/acr_import.bicep' = if (!empty(serviceLayerConfig.imageNames)) {
+  name: 'imageImport'
+  params: {
+    acrName: registry.outputs.name
+    location: location
+    images: serviceLayerConfig.imageNames
   }
 }
 
