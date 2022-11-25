@@ -16,13 +16,11 @@ resource aks 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' exi
   name: aksName
 }
 
-
-
 @description('The Git Repository URL where your flux configuration is homed')
-param fluxConfigRepo string = 'https://github.com/Azure/gitops-flux2-kustomize-helm-mt' //'https://github.com/Azure/gitops-flux2-kustomize-helm-mt' //'https://github.com/fluxcd/flux2-kustomize-helm-example'
+param fluxConfigRepo string = 'https://github.com/azure/osdu-bicep'
 
 @description('The Git Repository Branch where your flux configuration is homed')
-param fluxConfigRepoBranch string = 'main'
+param fluxConfigRepoBranch string = 'flux-setup'
 
 @description('The name of the flux configuration to apply')
 param fluxConfigName string = 'fluxsetup'
@@ -44,7 +42,7 @@ param fluxRepoInfraPath string = './infrastructure'
 @description('The Git Repository path for apps')
 param fluxRepoAppsPath string = './apps/staging'
 
-resource fluxConfig 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-03-01' = {
+resource fluxConfig 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-07-01' = {
   scope: aks
   name: cleanFluxConfigName
   properties: {

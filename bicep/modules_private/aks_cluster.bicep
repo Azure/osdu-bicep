@@ -597,7 +597,7 @@ output aksNodeResourceGroup string = aks.properties.nodeResourceGroup
 @description('Enable the Flux GitOps Operator')
 param fluxGitOpsAddon bool = false
 
-resource fluxAddon 'Microsoft.KubernetesConfiguration/extensions@2022-04-02-preview' = if(fluxGitOpsAddon) {
+resource fluxAddon 'Microsoft.KubernetesConfiguration/extensions@2022-07-01' = if(fluxGitOpsAddon) {
   name: 'flux'
   scope: aks
   properties: {

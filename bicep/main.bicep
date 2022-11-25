@@ -925,16 +925,16 @@ module cluster 'modules_private/aks_cluster.bicep' = {
 @description('The Git Repository for the Gitops Configuration.')
 var fluxConfiguration = 'https://github.com/azure/osdu-bicep'
 var fluxConfigRepoBranch = 'flux-setup'
+var fluxRepoPath = './software/osdu-stamp'
 
-module flux 'modules_private/flux_config_multi.bicep' = {
+module flux 'modules_private/flux_config.bicep' = {
   name: 'flux'
   params: {
     aksName: cluster.outputs.name
     aksFluxAddOnReleaseNamespace: cluster.outputs.fluxReleaseNamespace
-    // fluxConfigName: 'setup'
-    // fluxConfigRepo: fluxConfiguration
-    // fluxConfigRepoBranch: fluxConfigRepoBranch
-    // fluxRepoInfraPath: './software/infrastructure'
-    // fluxRepoAppsPath: './software/apps'
+    fluxConfigName: 'osdu-stamp'
+    fluxConfigRepo: fluxConfiguration
+    fluxConfigRepoBranch: fluxConfigRepoBranch
+    fluxRepoPath: fluxRepoPath
   }
 }
