@@ -603,6 +603,10 @@ resource fluxAddon 'Microsoft.KubernetesConfiguration/extensions@2022-07-01' = i
   properties: {
     extensionType: 'microsoft.flux'
     autoUpgradeMinorVersion: true
+    configurationSettings: {
+      'multiTenancy.enforce': 'false'
+    }
+
     releaseTrain: 'Stable'
     scope: {
       cluster: {
