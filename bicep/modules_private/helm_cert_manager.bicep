@@ -25,7 +25,7 @@ kubectl get all -n {0};
 '''
 var formattedHelmCommands = format(unformattedHelmCommands, namespace)
 
-module aadWorkloadId './aks_run_command.bicep' = {
+module aksRun './aks_run_command.bicep' = {
   name: 'helm-cert-manager'
   params: {
     aksName: aksName

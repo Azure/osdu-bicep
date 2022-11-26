@@ -27,8 +27,8 @@ kubectl get all -n {0};
 '''
 var formattedHelmCommands = format(unformattedHelmCommands, namespace, tenantId)
 
-module aadWorkloadId './aks_run_command.bicep' = {
-  name: 'helm-workload-id'
+module aksRun './aks_run_command.bicep' = {
+  name: 'helm-workload-identity'
   params: {
     aksName: aksName
     location: location
