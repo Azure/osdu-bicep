@@ -941,16 +941,16 @@ module cluster 'modules_private/aks_cluster.bicep' = {
 }
 
 //--------------Helm Installations---------------
-module certmanager './modules_private/helm_cert_manager.bicep' = {
-  name: 'certmanager-helm'
+module certManager './modules_private/helm_cert_manager.bicep' = {
+  name: 'cert-manager-helm'
   params: {
     aksName: cluster.outputs.name
     location: location
   }
 }
 
-module workloadId './modules_private/helm_workload_id.bicep' = {
-  name: 'workloadid-helm'
+module workloadIdentity './modules_private/helm_workload_id.bicep' = {
+  name: 'workload-identity-helm'
   params: {
     aksName: cluster.outputs.name
     location: location
@@ -975,7 +975,7 @@ module flux 'modules_private/flux_config.bicep' = {
     fluxRepoPath: fluxRepoPath
   }
   dependsOn: [
-    certmanager
-    workloadId
+    certManager
+    workloadIdentity
   ]
 }
