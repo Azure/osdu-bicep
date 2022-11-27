@@ -15,10 +15,10 @@ spec:
   healthChecks:
     - kind: Deployment
       name: cert-manager
-      namespace: kube-system
+      namespace: cert-manager
     - kind: Deployment
       name: cert-manager-cainjector
-      namespace: kube-system
+      namespace: cert-manager
     - kind: Deployment
       name: cert-manager-webhook
-      namespace: kube-system
+      namespace: cert-manager
