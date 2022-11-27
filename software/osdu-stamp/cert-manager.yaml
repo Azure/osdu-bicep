@@ -12,7 +12,13 @@ spec:
   path: ./software/apps/base/cert-manager
   prune: true
   validation: client
-  # healthChecks:
-  #   - kind: Deployment
-  #     name: sealed-secrets
-  #     namespace: kube-system
+  healthChecks:
+    - kind: Deployment
+      name: cert-manager
+      namespace: kube-system
+    - kind: Deployment
+      name: cert-manager-cainjector
+      namespace: kube-system
+    - kind: Deployment
+      name: cert-manager-webhook
+      namespace: kube-system
