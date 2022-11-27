@@ -1,11 +1,9 @@
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta1
-kind: GitRepository
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
 metadata:
-  name: cert-manager-charts
+  name: cert-manager
   namespace: cert-manager
 spec:
   interval: 5m0s
-  ref:
-    tag: 1.10.1
   url: https://github.com/cert-manager/cert-manager

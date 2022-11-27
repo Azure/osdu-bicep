@@ -5,15 +5,21 @@ metadata:
   name: cert-manager
   namespace: cert-manager
 spec:
+  interval: 10m0s
+  targetNamespace: cert-manager
+  releaseName: cert-manager
   chart:
     spec:
-      chart: ./deploy/charts/cert-manager
+      chart: jetstack/cert-manager
+      version: '1.10.1'
       sourceRef:
-        kind: GitRepository
-        name: cert-manager-charts
+        kind: HelmRepository
+        name: cert-manager
         namespace: cert-manager
+  values:
+    installCRDs: true
   install:
     crds: Create
-  interval: 10m0s
-  releaseName: cert-manager
-  targetNamespace: cert-manager
+  upgrade:
+    crds: CreateReplace
+

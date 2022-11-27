@@ -940,23 +940,6 @@ module cluster 'modules_private/aks_cluster.bicep' = {
   }
 }
 
-//--------------Helm Installations---------------
-module certManager './modules_private/helm_cert_manager.bicep' = {
-  name: 'cert-manager-helm'
-  params: {
-    aksName: cluster.outputs.name
-    location: location
-  }
-}
-
-module workloadIdentity './modules_private/helm_workload_id.bicep' = {
-  name: 'workload-identity-helm'
-  params: {
-    aksName: cluster.outputs.name
-    location: location
-  }
-}
-
 
 //--------------Flux Config---------------
 @description('The Git Repository for the Gitops Configuration.')
@@ -976,6 +959,5 @@ module flux 'modules_private/flux_config.bicep' = {
   }
   dependsOn: [
     certManager
-    workloadIdentity
   ]
 }
