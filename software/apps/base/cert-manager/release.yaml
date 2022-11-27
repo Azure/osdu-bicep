@@ -16,6 +16,6 @@ spec:
         kind: HelmRepository
         name: jetstack
         namespace: flux-system
-    install:
-      createNamespace: true
+install:
+  createNamespace: true
       
