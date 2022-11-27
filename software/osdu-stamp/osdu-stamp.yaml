@@ -9,7 +9,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: osdu-bicep
-  path: ./software/apps/cluster/
+  path: ./software/apps/cluster-manifests/
   prune: true
   validation: client
   # healthChecks:
