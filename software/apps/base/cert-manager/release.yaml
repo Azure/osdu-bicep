@@ -3,19 +3,20 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: cert-manager
-  namespace: cert-manager
+  namespace: flux-system
 spec:
-  interval: 10m0s
   chart:
     spec:
       chart: jetstack/cert-manager
-      version: 'v1.10.1'
       sourceRef:
         kind: HelmRepository
         name: jetstack
-  values:
-    installCRDs: true
-  # install:
-  #   crds: Create
-  # upgrade:
-  #   crds: CreateReplace
+        namespace: flux-system
+      version: 'v1.10.1'
+  install:
+    crds: Create
+  interval: 10m0s
+  releaseName: cert-manager
+  targetNamespace: kube-system
+  upgrade:
+    crds: CreateReplace
