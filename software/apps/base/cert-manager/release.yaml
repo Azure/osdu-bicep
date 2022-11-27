@@ -7,7 +7,6 @@ metadata:
 spec:
   interval: 10m0s
   targetNamespace: cert-manager
-  releaseName: cert-manager
   chart:
     spec:
       chart: jetstack/cert-manager
@@ -18,8 +17,7 @@ spec:
         namespace: cert-manager
   values:
     installCRDs: true
-  install:
-    crds: Create
-  upgrade:
-    crds: CreateReplace
-
+  # install:
+  #   crds: Create
+  # upgrade:
+  #   crds: CreateReplace
