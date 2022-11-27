@@ -6,4 +6,4 @@ metadata:
   namespace: cert-manager
 spec:
   interval: 5m0s
-  url: https://github.com/cert-manager/cert-manager
+  url: https://charts.jetstack.io

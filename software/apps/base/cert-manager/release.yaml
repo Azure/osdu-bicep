@@ -10,7 +10,7 @@ spec:
   releaseName: cert-manager
   chart:
     spec:
-      chart: jcert-manager
+      chart: jetstack/cert-manager
       version: '1.10.1'
       sourceRef:
         kind: HelmRepository
