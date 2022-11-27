@@ -958,6 +958,6 @@ module flux 'modules_private/flux_config.bicep' = {
     fluxRepoPath: fluxRepoPath
   }
   dependsOn: [
-    certManager
+    cluster
   ]
 }
