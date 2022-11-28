@@ -1,0 +1,29 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: software-releases
+  namespace: flux-system
+spec:
+  interval: 10m0
+  sourceRef:
+    kind: GitRepository
+    name: osdu-bicep
+  path: ./software/releases/stamp
+  prune: true
+  validation: client
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+# kind: Kustomization
+# metadata:
+#   name: software-manifests
+#   namespace: flux-system
+# spec:
+#   dependsOn:
+#   - name: software-releases
+#   interval: 10m0s
+#   sourceRef:
+#     kind: GitRepository
+#     name: osdu-bicep
+#   path: ./software/manifests/stamp
+#   prune: true
+#   validation: client
