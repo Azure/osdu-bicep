@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: flux-system
 resources:
-- sealed-secrets.yml
+- sealed-secrets.yaml
 - istio.yaml
 - istio-git.yaml
 - jetstack.yaml
