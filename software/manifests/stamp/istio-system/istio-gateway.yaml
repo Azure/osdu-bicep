@@ -25,7 +25,7 @@ spec:
     istio: ingressgateway
   servers:
   - hosts:
-    - "grafana.osdu.stamp"
+    - "kiali.osdu.stamp"
     port:
       name: http
       number: 80
@@ -33,7 +33,7 @@ spec:
     tls:
       httpsRedirect: true
   - hosts:
-    - "granfana.osdu.stamp"
+    - "kiali.osdu.stamp"
     port:
       number: 443
       name: https

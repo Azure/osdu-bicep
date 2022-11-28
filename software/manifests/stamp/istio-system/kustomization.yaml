@@ -4,4 +4,4 @@ namespace: istio-system
 resources:
 - ../../base/istio-system
 - certificate.yaml
-# - istio-gateway.yaml
+- istio-gateway.yaml
