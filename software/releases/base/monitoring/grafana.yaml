@@ -51,23 +51,6 @@ spec:
       datasources.yaml:
         apiVersion: 1
         datasources:
-        - name: Tempo
-          type: tempo
-          access: proxy
-          uid: tempo_ds
-          url: http://tempo-tempo-distributed-query-frontend.monitoring:3100
-        - name: Loki
-          type: loki
-          access: proxy
-          uid: loki_ds
-          url: http://loki-loki-distributed-query-frontend.monitoring:3100
-          jsonData:
-            maxLines: 1000
-            derivedFields:
-            - datasourceUid: tempo_ds
-              matcherRegex: "traceID=(\\w+)"
-              name: TraceID
-              url: "$${__value.raw}"
         - name: Prometheus
           type: prometheus
           access: proxy
@@ -79,27 +62,6 @@ spec:
           access: proxy
           uid: istio_prometheus_ds
           url: http://prometheus-operated.istio-system:9090
-        - name: Alertmanager
-          type: camptocamp-prometheus-alertmanager-datasource
-          access: proxy
-          uid: alertmanager_ds
-          url: http://alertmanager-operated.monitoring:9093
-          jsonData:
-            severity_critical: critical
-            severity_high: error
-            severity_warning: warning
-            severity_info: information
-        #    - name: Thanos
-        #      type: prometheus
-        #      access: proxy
-        #      uid: thanos_ds
-        #      url: http://thanos-query-http.monitoring:10902
-        #      isDefault: true
-        - name: Mimir
-          type: prometheus
-          access: proxy
-          uid: mimir_ds
-          url: http://mimir-nginx/prometheus
     dashboardProviders:
       dashboardproviders.yaml:
         apiVersion: 1
@@ -125,21 +87,8 @@ spec:
     - grafana-clock-panel
     - grafana-piechart-panel
     - grafana-kubernetes-app
-    - camptocamp-prometheus-alertmanager-datasource
     dashboards:
       default:
-        weave-flux:
-          gnetId: 10475
-          revision: 1
-          datasource: Thanos
-        logging-loki:
-          gnetId: 12611
-          revision: 1
-          datasource: Loki
-        alertmanager-stats:
-          gnetId: 9578
-          revision: 4
-          datasource: Thanos
       istio:
         istio-workload:
           gnetId: 7630

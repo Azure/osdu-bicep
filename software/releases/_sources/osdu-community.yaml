@@ -3,9 +3,8 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: GitRepository
 metadata:
   name: osdu-community
-  namespace: flux-system
 spec:
   interval: 1m0s
+  url: https://community.opengroup.org/osdu/platform/deployment-and-operations/helm-charts-azure
   ref:
     branch: release/0.16
-  url: https://community.opengroup.org/osdu/platform/deployment-and-operations/helm-charts-azure

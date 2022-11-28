@@ -4,4 +4,4 @@ resources:
 - ../_sources
 - cert-manager
 - istio-system
-- monitoring
+# - monitoring
