@@ -18,3 +18,6 @@ spec:
   values:
     hub: "docker.io/istio"
     tag: "1.15.1"
+  components:
+    pilot:
+      enabled: true
