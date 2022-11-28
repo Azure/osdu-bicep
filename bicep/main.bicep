@@ -948,7 +948,7 @@ var fluxConfigRepoBranch = 'main'
 var fluxRepoPath = './clusters/osdu-stamp'
 
 module flux 'modules_private/flux_config.bicep' = {
-  name: '${serviceLayerConfig.name}-cluster-gitops-config'
+  name: '${serviceLayerConfig.name}-cluster-gitops'
   params: {
     aksName: cluster.outputs.name
     aksFluxAddOnReleaseNamespace: cluster.outputs.fluxReleaseNamespace
