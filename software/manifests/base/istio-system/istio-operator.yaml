@@ -18,6 +18,6 @@ spec:
       k8s:
         hpaSpec:
           minReplicas: 2
-    # egressGateways:
-    # - name: istio-egressgateway
-    #   enabled: false
+    egressGateways:
+    - name: istio-egressgateway
+      enabled: false
