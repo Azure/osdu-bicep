@@ -4,7 +4,7 @@ metadata:
   name: software-releases
   namespace: flux-system
 spec:
-  interval: 10m0
+  interval: 10m0s
   sourceRef:
     kind: GitRepository
     name: osdu-bicep
