@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
 - ../_sources
 - sealed-secrets
-# - cert-manager
+- cert-manager
 # - istio-system
 # - monitoring
