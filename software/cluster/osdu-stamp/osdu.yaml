@@ -2,17 +2,17 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
 kind: Kustomization
 metadata:
-  name: sealed-secrets
+  name: osdu
   namespace: flux-system
 spec:
   interval: 5m0s
   sourceRef:
     kind: GitRepository
     name: osdu-bicep
-  path: ./software/apps/sealed-secrets
+  path: ./software/apps
   prune: true
   validation: client
-  healthChecks:
-    - kind: Deployment
-      name: sealed-secrets
-      namespace: kube-system
+  # healthChecks:
+  # - kind: Deployment
+  #   name: istio-operator
+  #   namespace: istio-operator
