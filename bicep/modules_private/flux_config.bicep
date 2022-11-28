@@ -63,7 +63,7 @@ resource fluxConfig 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-0
       password: fluxRepoPasswordB64
     } : {}
     kustomizations: {
-      install: {
+      config: {
         path: fluxRepoPath
         dependsOn: []
         timeoutInSeconds: 300
