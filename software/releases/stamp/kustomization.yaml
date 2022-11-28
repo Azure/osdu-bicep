@@ -4,5 +4,5 @@ resources:
 - ../_sources
 - sealed-secrets
 - cert-manager
-# - istio-system
+- istio-system
 # - monitoring
