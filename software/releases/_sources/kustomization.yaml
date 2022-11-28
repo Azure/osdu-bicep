@@ -8,3 +8,4 @@ resources:
 - istio-git.yaml
 - jetstack.yaml
 - prometheus-community.yaml
+- kiali.yaml
