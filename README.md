@@ -30,6 +30,26 @@ Below is a table containing all published modules. Each version badge shows the 
 
 <!-- End Module Table -->
 
+## GitOps 
+
+### Repository Structure
+
+```
+├── clusters
+|  └── osdu-stamp
+├── software
+|  ├── manifests
+|  |  ├── base
+|  |  └── stamp
+|  └── releases
+|     ├── _sources
+|     ├── base
+|     └── stamp
+└── applications
+   ├── base
+   └── stamp        
+```
+
 ## Contributing
 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a

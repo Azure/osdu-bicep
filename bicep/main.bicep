@@ -943,8 +943,8 @@ module cluster 'modules_private/aks_cluster.bicep' = {
 
 //--------------Flux Config---------------
 @description('The Git Repository for the Gitops Configuration.')
-var fluxConfiguration = 'https://github.com/azure/osdu-bicep'
-var fluxConfigRepoBranch = 'flux-setup'
+var fluxConfiguration = 'https://github.com/danielscholl/gitops-osdu-stamp'
+var fluxConfigRepoBranch = 'main'
 var fluxRepoPath = './clusters/osdu-stamp'
 
 module flux 'modules_private/flux_config.bicep' = {
