@@ -154,7 +154,6 @@ az deployment group create --template-file $TEMPLATE \
       --parameters applicationId=$APPLICATION_OBJECT_ID \
       --parameters applicationClientId=$APPLICATION_CLIENT_ID \
       --parameters applicationClientSecret=$APPLICATION_CLIENT_SECRET \
-      --parameters clusterAdminIds=[\"$AZURE_GROUP_ID\"] \
       -ojson 1>/dev/null
 
 if [[ $? == 0 ]]; then

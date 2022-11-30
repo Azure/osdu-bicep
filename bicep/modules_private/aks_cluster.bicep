@@ -513,7 +513,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2022-08-03-preview' = {
       managed: true
       enableAzureRBAC: enableAzureRBAC
       tenantID: aad_tenant_id
-      adminGroupObjectIDs: admin_ids
+      adminGroupObjectIDs: empty(admin_ids) ? json('null') : admin_ids
     } : null
 
     autoUpgradeProfile: {

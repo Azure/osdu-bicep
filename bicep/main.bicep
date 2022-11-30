@@ -938,7 +938,7 @@ module cluster 'modules_private/aks_cluster.bicep' = {
     ClusterSize: ClusterSize
 
     // Configure Add Ons
-    enable_aad: true
+    enable_aad: empty(clusterAdminIds) == true ? false : true
     admin_ids: clusterAdminIds
     workloadIdentityEnabled: true
     keyvaultEnabled: true
