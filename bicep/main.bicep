@@ -151,7 +151,6 @@ var partitionLayerConfig = {
     sku: 'Standard_LRS'
     containers: [
       'legal-service-azure-configuration'
-      'opendes'
       'osdu-wks-mappings'
       'wdms-osdu'
       'file-staging-area'
@@ -812,7 +811,7 @@ module partitionStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' =
 
     // Configure Service
     sku: partitionLayerConfig.storage.sku
-    containers: partitionLayerConfig.storage.containers
+    containers: concat(partitionLayerConfig.storage.containers, [partition.name])
 
     // Assign RBAC
     roleAssignments: [
