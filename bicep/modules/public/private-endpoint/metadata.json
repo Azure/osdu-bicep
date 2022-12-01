@@ -1,6 +1,6 @@
 {
   "$schema": "https://aka.ms/bicep-registry-module-metadata-file-schema-v2#",
-  "name": "Azure Private DNS Zone Module",
-  "summary": "This module deploys an Azure Private DNS Zone.",
+  "name": "Private Endpoint Module",
+  "summary": "This module deploys an Azure Private Endpoint.",
   "owner": "azure-global-energy"
 }

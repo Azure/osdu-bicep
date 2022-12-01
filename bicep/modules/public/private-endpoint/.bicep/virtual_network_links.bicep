@@ -1,11 +1,8 @@
 @description('Conditional. The name of the parent Private DNS zone. Required if the template is used in a standalone deployment.')
 param privateDnsZoneName string
 
-@description('Required. Link to another virtual network resource ID.')
-param virtualNetworkResourceId string
-
 @description('Optional. The name of the virtual network link.')
-param resourceName string
+param name string = '${last(split(virtualNetworkResourceId, '/'))}-vnetlink'
 
 @description('Optional. The location of the PrivateDNSZone. Should be global.')
 param location string = 'global'
@@ -16,14 +13,15 @@ param tags object = {}
 @description('Optional. Is auto-registration of virtual machine records in the virtual network in the Private DNS zone enabled?.')
 param registrationEnabled bool = false
 
-
+@description('Required. Link to another virtual network resource ID.')
+param virtualNetworkResourceId string
 
 resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
   name: privateDnsZoneName
 }
 
 resource virtualNetworkLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: resourceName
+  name: name
   parent: privateDnsZone
   location: location
   tags: tags

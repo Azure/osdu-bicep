@@ -1,5 +1,4 @@
 node_modules
 .netrc
-private*
 .envrc
 parameters_custom.json

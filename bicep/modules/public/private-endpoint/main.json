@@ -4,30 +4,81 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.11.1.770",
-      "templateHash": "2390491057119277155"
+      "version": "0.10.61.36676",
+      "templateHash": "2297449163574331190"
     }
   },
   "parameters": {
     "resourceName": {
       "type": "string",
       "metadata": {
-        "description": "Optional. Private DNS zone name."
+        "description": "Required. Name of the private endpoint resource to create."
       }
     },
-    "virtualNetworkLinks": {
+    "subnetResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Resource ID of the subnet where the endpoint needs to be created."
+      }
+    },
+    "serviceResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Required. Resource ID of the resource that needs to be connected to the network."
+      }
+    },
+    "applicationSecurityGroups": {
       "type": "array",
       "defaultValue": [],
       "metadata": {
-        "description": "Optional. Array of custom objects describing vNet links of the DNS zone. Each object should contain properties 'vnetResourceId' and 'registrationEnabled'. The 'vnetResourceId' is a resource ID of a vNet to link, 'registrationEnabled' (bool) enables automatic DNS registration in the zone for the linked vNet."
+        "description": "Optional. Application security groups in which the private endpoint IP configuration is included."
+      }
+    },
+    "customNetworkInterfaceName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. The custom name of the network interface attached to the private endpoint."
+      }
+    },
+    "ipConfigurations": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional. A list of IP configurations of the private endpoint. This will be used to map to the First Party Service endpoints."
+      }
+    },
+    "groupIds": {
+      "type": "array",
+      "metadata": {
+        "description": "Required. Subtype(s) of the connection to be created. The allowed values depend on the type serviceResourceId refers to."
+      }
+    },
+    "privateDnsZoneGroup": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Optional. The private DNS zone group configuration used to associate the private endpoint with one or multiple private DNS zones. A DNS zone group can support up to 5 DNS zones."
       }
     },
     "location": {
       "type": "string",
-      "defaultValue": "global",
+      "defaultValue": "[resourceGroup().location]",
       "metadata": {
-        "description": "Optional. The location of the PrivateDNSZone. Should be global."
+        "description": "Optional. Location for all Resources."
       }
+    },
+    "lock": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional. Specify the type of lock."
+      },
+      "allowedValues": [
+        "",
+        "CanNotDelete",
+        "ReadOnly"
+      ]
     },
     "roleAssignments": {
       "type": "array",
@@ -36,84 +87,85 @@
         "description": "Optional. Array of role assignment objects that contain the 'roleDefinitionIdOrName' and 'principalId' to define RBAC role assignments on this resource. In the roleDefinitionIdOrName attribute, you can provide either the display name of the role definition, or its fully qualified ID in the following format: '/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11'."
       }
     },
-    "lock": {
-      "type": "string",
-      "defaultValue": "NotSpecified",
-      "metadata": {
-        "description": "Optional. Specify the type of lock."
-      },
-      "allowedValues": [
-        "CanNotDelete",
-        "NotSpecified",
-        "ReadOnly"
-      ]
-    },
     "tags": {
       "type": "object",
       "defaultValue": {},
       "metadata": {
-        "description": "Optional.Tags."
+        "description": "Optional. Tags to be applied on all resources/resource groups in this deployment."
+      }
+    },
+    "customDnsConfigs": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional. Custom DNS configurations."
+      }
+    },
+    "manualPrivateLinkServiceConnections": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional. Manual PrivateLink Service Connections."
       }
     }
   },
-  "variables": {
-    "publicDNSZoneForwarder": "[format('blob.{0}', environment().suffixes.storage)]",
-    "privateDnsZoneName": "[if(equals(parameters('resourceName'), ''), format('privatelink.{0}', variables('publicDNSZoneForwarder')), parameters('resourceName'))]"
-  },
   "resources": [
     {
-      "type": "Microsoft.Network/privateDnsZones",
-      "apiVersion": "2020-06-01",
-      "name": "[variables('privateDnsZoneName')]",
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2022-05-01",
+      "name": "[parameters('resourceName')]",
       "location": "[parameters('location')]",
       "tags": "[parameters('tags')]",
-      "properties": {}
+      "properties": {
+        "applicationSecurityGroups": "[parameters('applicationSecurityGroups')]",
+        "customNetworkInterfaceName": "[parameters('customNetworkInterfaceName')]",
+        "ipConfigurations": "[parameters('ipConfigurations')]",
+        "privateLinkServiceConnections": [
+          {
+            "name": "[parameters('resourceName')]",
+            "properties": {
+              "privateLinkServiceId": "[parameters('serviceResourceId')]",
+              "groupIds": "[parameters('groupIds')]"
+            }
+          }
+        ],
+        "manualPrivateLinkServiceConnections": "[parameters('manualPrivateLinkServiceConnections')]",
+        "subnet": {
+          "id": "[parameters('subnetResourceId')]"
+        },
+        "customDnsConfigs": "[parameters('customDnsConfigs')]"
+      }
     },
     {
-      "condition": "[not(equals(parameters('lock'), 'NotSpecified'))]",
+      "condition": "[not(empty(parameters('lock')))]",
       "type": "Microsoft.Authorization/locks",
       "apiVersion": "2017-04-01",
-      "scope": "[format('Microsoft.Network/privateDnsZones/{0}', variables('privateDnsZoneName'))]",
-      "name": "[format('{0}-{1}-lock', variables('privateDnsZoneName'), parameters('lock'))]",
+      "scope": "[format('Microsoft.Network/privateEndpoints/{0}', parameters('resourceName'))]",
+      "name": "[format('{0}-{1}-lock', parameters('resourceName'), parameters('lock'))]",
       "properties": {
         "level": "[parameters('lock')]",
         "notes": "[if(equals(parameters('lock'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot modify the resource or child resources.')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+        "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]"
       ]
     },
     {
-      "copy": {
-        "name": "privateDnsZone_virtualNetworkLinks",
-        "count": "[length(parameters('virtualNetworkLinks'))]"
-      },
+      "condition": "[not(empty(parameters('privateDnsZoneGroup')))]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
-      "name": "[format('{0}-{1}-{2}', deployment().name, variables('privateDnsZoneName'), copyIndex())]",
+      "name": "[format('{0}-PrivateEndpoint-PrivateDnsZoneGroup', uniqueString(deployment().name, parameters('location')))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
         },
         "mode": "Incremental",
         "parameters": {
-          "privateDnsZoneName": {
-            "value": "[variables('privateDnsZoneName')]"
+          "privateDNSResourceIds": {
+            "value": "[parameters('privateDnsZoneGroup').privateDNSResourceIds]"
           },
-          "resourceName": {
-            "value": "[if(and(contains(parameters('virtualNetworkLinks')[copyIndex()], 'name'), not(empty(parameters('virtualNetworkLinks')[copyIndex()].name))), parameters('virtualNetworkLinks')[copyIndex()].name, format('{0}_link_to_vnet', last(split(parameters('virtualNetworkLinks')[copyIndex()].virtualNetworkResourceId, '/'))))]"
-          },
-          "virtualNetworkResourceId": {
-            "value": "[parameters('virtualNetworkLinks')[copyIndex()].virtualNetworkResourceId]"
-          },
-          "location": {
-            "value": "[if(and(contains(parameters('virtualNetworkLinks')[copyIndex()], 'location'), not(empty(parameters('virtualNetworkLinks')[copyIndex()].location))), parameters('virtualNetworkLinks')[copyIndex()].location, 'global')]"
-          },
-          "registrationEnabled": {
-            "value": "[if(and(contains(parameters('virtualNetworkLinks')[copyIndex()], 'registrationEnabled'), not(empty(parameters('virtualNetworkLinks')[copyIndex()].registrationEnabled))), parameters('virtualNetworkLinks')[copyIndex()].registrationEnabled, false())]"
-          },
-          "tags": {
-            "value": "[if(contains(parameters('virtualNetworkLinks')[copyIndex()], 'tags'), parameters('virtualNetworkLinks')[copyIndex()].tags, createObject())]"
+          "privateEndpointName": {
+            "value": "[parameters('resourceName')]"
           }
         },
         "template": {
@@ -122,110 +174,115 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.11.1.770",
-              "templateHash": "6313436627487943019"
+              "version": "0.10.61.36676",
+              "templateHash": "12824745465463051592"
             }
           },
           "parameters": {
-            "privateDnsZoneName": {
+            "privateEndpointName": {
               "type": "string",
               "metadata": {
-                "description": "Conditional. The name of the parent Private DNS zone. Required if the template is used in a standalone deployment."
+                "description": "Conditional. The name of the parent private endpoint. Required if the template is used in a standalone deployment."
               }
             },
-            "virtualNetworkResourceId": {
+            "privateDNSResourceIds": {
+              "type": "array",
+              "maxLength": 5,
+              "minLength": 1,
+              "metadata": {
+                "description": "Required. Array of private DNS zone resource IDs. A DNS zone group can support up to 5 DNS zones."
+              }
+            },
+            "name": {
               "type": "string",
+              "defaultValue": "default",
               "metadata": {
-                "description": "Required. Link to another virtual network resource ID."
+                "description": "Optional. The name of the private DNS zone group."
               }
             },
-            "resourceName": {
-              "type": "string",
-              "metadata": {
-                "description": "Optional. The name of the virtual network link."
-              }
-            },
-            "location": {
-              "type": "string",
-              "defaultValue": "global",
-              "metadata": {
-                "description": "Optional. The location of the PrivateDNSZone. Should be global."
-              }
-            },
-            "tags": {
-              "type": "object",
-              "defaultValue": {},
-              "metadata": {
-                "description": "Optional. Tags of the resource."
-              }
-            },
-            "registrationEnabled": {
+            "enableDefaultTelemetry": {
               "type": "bool",
-              "defaultValue": false,
+              "defaultValue": true,
               "metadata": {
-                "description": "Optional. Is auto-registration of virtual machine records in the virtual network in the Private DNS zone enabled?."
+                "description": "Optional. Enable telemetry via a Globally Unique Identifier (GUID)."
               }
             }
           },
+          "variables": {
+            "copy": [
+              {
+                "name": "privateDnsZoneConfigs",
+                "count": "[length(parameters('privateDNSResourceIds'))]",
+                "input": {
+                  "name": "[last(split(parameters('privateDNSResourceIds')[copyIndex('privateDnsZoneConfigs')], '/'))]",
+                  "properties": {
+                    "privateDnsZoneId": "[parameters('privateDNSResourceIds')[copyIndex('privateDnsZoneConfigs')]]"
+                  }
+                }
+              }
+            ]
+          },
           "resources": [
             {
-              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-              "apiVersion": "2020-06-01",
-              "name": "[format('{0}/{1}', parameters('privateDnsZoneName'), parameters('resourceName'))]",
-              "location": "[parameters('location')]",
-              "tags": "[parameters('tags')]",
+              "condition": "[parameters('enableDefaultTelemetry')]",
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2021-04-01",
+              "name": "[format('pid-47ed15a6-730a-4827-bcb4-0fd963ffbd82-{0}', uniqueString(deployment().name))]",
               "properties": {
-                "registrationEnabled": "[parameters('registrationEnabled')]",
-                "virtualNetwork": {
-                  "id": "[parameters('virtualNetworkResourceId')]"
+                "mode": "Incremental",
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "resources": []
                 }
+              }
+            },
+            {
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2022-05-01",
+              "name": "[format('{0}/{1}', parameters('privateEndpointName'), parameters('name'))]",
+              "properties": {
+                "privateDnsZoneConfigs": "[variables('privateDnsZoneConfigs')]"
               }
             }
           ],
           "outputs": {
             "name": {
               "type": "string",
-              "value": "[parameters('resourceName')]",
+              "value": "[parameters('name')]",
               "metadata": {
-                "description": "The name of the deployed virtual network link."
+                "description": "The name of the private endpoint DNS zone group."
               }
             },
             "resourceId": {
               "type": "string",
-              "value": "[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', parameters('privateDnsZoneName'), parameters('resourceName'))]",
+              "value": "[resourceId('Microsoft.Network/privateEndpoints/privateDnsZoneGroups', parameters('privateEndpointName'), parameters('name'))]",
               "metadata": {
-                "description": "The resource ID of the deployed virtual network link."
+                "description": "The resource ID of the private endpoint DNS zone group."
               }
             },
             "resourceGroupName": {
               "type": "string",
               "value": "[resourceGroup().name]",
               "metadata": {
-                "description": "The resource group of the deployed virtual network link."
-              }
-            },
-            "location": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', parameters('privateDnsZoneName'), parameters('resourceName')), '2020-06-01', 'full').location]",
-              "metadata": {
-                "description": "The location the resource was deployed into."
+                "description": "The resource group the private endpoint DNS zone group was deployed into."
               }
             }
           }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+        "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]"
       ]
     },
     {
       "copy": {
-        "name": "privateDnsZone_roleAssignments",
+        "name": "privateEndpoint_roleAssignments",
         "count": "[length(parameters('roleAssignments'))]"
       },
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
-      "name": "[format('{0}-rbac-{1}', deployment().name, copyIndex())]",
+      "name": "[format('{0}-PrivateEndpoint-Rbac-{1}', uniqueString(deployment().name, parameters('location')), copyIndex())]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -251,7 +308,7 @@
             "value": "[if(contains(parameters('roleAssignments')[copyIndex()], 'delegatedManagedIdentityResourceId'), parameters('roleAssignments')[copyIndex()].delegatedManagedIdentityResourceId, '')]"
           },
           "resourceId": {
-            "value": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+            "value": "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]"
           }
         },
         "template": {
@@ -260,8 +317,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.11.1.770",
-              "templateHash": "2480290384251851776"
+              "version": "0.10.61.36676",
+              "templateHash": "15948463085785887002"
             }
           },
           "parameters": {
@@ -364,7 +421,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+        "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]"
       ]
     }
   ],
@@ -373,26 +430,26 @@
       "type": "string",
       "value": "[resourceGroup().name]",
       "metadata": {
-        "description": "The resource group the private DNS zone was deployed into."
+        "description": "The resource group the private endpoint was deployed into."
+      }
+    },
+    "resourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]",
+      "metadata": {
+        "description": "The resource ID of the private endpoint."
       }
     },
     "name": {
       "type": "string",
-      "value": "[variables('privateDnsZoneName')]",
+      "value": "[parameters('resourceName')]",
       "metadata": {
-        "description": "The name of the private DNS zone."
-      }
-    },
-    "id": {
-      "type": "string",
-      "value": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]",
-      "metadata": {
-        "description": "The resource ID of the private DNS zone."
+        "description": "The name of the private endpoint."
       }
     },
     "location": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName')), '2020-06-01', 'full').location]",
+      "value": "[reference(resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName')), '2022-05-01', 'full').location]",
       "metadata": {
         "description": "The location the resource was deployed into."
       }
