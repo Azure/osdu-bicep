@@ -36,10 +36,10 @@ param diagnosticEventHubName string = ''
 
 @allowed([ 'new', 'existing', 'none' ])
 @description('Create a new, use an existing, or provide no default NSG.')
-param newOrExistingNSG string = 'none'
+param newOrExistingNSG string = 'new'
 
 @description('Name of default NSG to use for subnets.')
-param networkSecurityGroupName string = uniqueString(resourceGroup().name, location)
+param networkSecurityGroupName string = ''
 
 @description('Optional. DNS Servers associated to the Virtual Network.')
 param dnsServers array = []
@@ -118,7 +118,7 @@ var diagnosticsMetrics = [for metric in metricsToEnable: {
   }
 }]
 
-var dnsServers_var = {
+var dnsServers_obj = {
   dnsServers: array(dnsServers)
 }
 var ddosProtectionPlan = {
@@ -127,7 +127,7 @@ var ddosProtectionPlan = {
 
 
 resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2021-08-01' = if( newOrExistingNSG == 'new' ) {
-  name: networkSecurityGroupName
+  name:  empty(networkSecurityGroupName) ? '${name}-nsg' : networkSecurityGroupName
   location: location
   properties: {
     securityRules: [
@@ -166,7 +166,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-02-01' = {
       addressPrefixes: addressPrefixes
     }
     ddosProtectionPlan: !empty(ddosProtectionPlanId) ? ddosProtectionPlan : null
-    dhcpOptions: !empty(dnsServers) ? dnsServers_var : null
+    dhcpOptions: !empty(dnsServers) ? dnsServers_obj : null
     enableDdosProtection: !empty(ddosProtectionPlanId)
     subnets: [for subnet in subnets: {
       name: subnet.name
@@ -270,3 +270,6 @@ output subnetNames array = [for subnet in subnets: subnet.name]
 
 @description('The resource IDs of the deployed subnets')
 output subnetIds array = [for subnet in subnets: az.resourceId('Microsoft.Network/virtualNetworks/subnets', name, subnet.name)]
+
+@description('The network security group id')
+output nsgName string = newOrExistingNSG != 'none' ? networkSecurityGroup.name : ''

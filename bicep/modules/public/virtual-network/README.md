@@ -46,7 +46,7 @@ This module is responsible for deploying networks.  It has the capability to hoo
 A simple network.
 
 ```bicep
-module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = {
+module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.5' = {
   name: 'azure_vnet'
   params: {
     resourceName: 'vnet-${uniqueString(resourceGroup().id)}'
@@ -71,7 +71,7 @@ module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = {
 A hub spoke network sample.
 
 ```bicep
-module hub_vnet 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = {
+module hub_vnet 'br:osdubicep.azurecr.io/public/virtual-network:1.0.5' = {
   name: 'azure_vnet_hub'
   params: {
     resourceName: 'hub'
