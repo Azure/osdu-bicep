@@ -37,17 +37,14 @@ var builtInRoleNames = {
   Owner: subscriptionResourceId('Microsoft.Authorization/roleDefinitions','8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
   Contributor: subscriptionResourceId('Microsoft.Authorization/roleDefinitions','b24988ac-6180-42a0-ab88-20f7382dd24c')
   Reader: subscriptionResourceId('Microsoft.Authorization/roleDefinitions','acdd72a7-3385-48ef-bd42-f606fba81ae7')
-  'DNS Resolver Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions','0f2ebee7-ffd4-4fc0-b3b7-664099fdad5d')
-  'DNS Zone Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions','befefa01-2a29-4197-83a8-272ff33ce314')
-  'Private DNS Zone Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions','b12aa53e-6015-4669-85d0-8515ebb3ae7f')
 }
 
-resource privateDnsZone 'Microsoft.Network/privateDnsZones@2018-09-01' existing = {
+resource privateEndpoint 'Microsoft.Network/privateEndpoints@2021-08-01' existing = {
   name: last(split(resourceId, '/'))
 }
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for principalId in principalIds: {
-  name: guid(privateDnsZone.id, principalId, roleDefinitionIdOrName)
+  name: guid(privateEndpoint.id, principalId, roleDefinitionIdOrName)
   properties: {
     description: description
     roleDefinitionId: contains(builtInRoleNames, roleDefinitionIdOrName) ? builtInRoleNames[roleDefinitionIdOrName] : roleDefinitionIdOrName
@@ -57,5 +54,5 @@ resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
     conditionVersion: !empty(conditionVersion) && !empty(condition) ? conditionVersion : null
     delegatedManagedIdentityResourceId: !empty(delegatedManagedIdentityResourceId) ? delegatedManagedIdentityResourceId : null
   }
-  scope: privateDnsZone
+  scope: privateEndpoint
 }]

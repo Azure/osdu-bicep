@@ -1,8 +1,9 @@
 targetScope = 'resourceGroup'
 
-@description('PrivateDNSZone name.')
+@minLength(3)
+@maxLength(22)
+@description('Required. Used to name all resources')
 param resourceName string
-
 
 // Dependency: Storage
 module storage '../../storage-account/main.bicep' = {
@@ -12,7 +13,6 @@ module storage '../../storage-account/main.bicep' = {
     sku: 'Standard_LRS'
   }
 }
-
 
 // Dependency: Private DNS Zone
 var publicDNSZoneForwarder = 'blob.${environment().suffixes.storage}'
@@ -43,24 +43,16 @@ module network '../../virtual-network/main.bicep' = {
   }
 }
 
-//  Module --> Create a Private DNS zone
-module endpoint '../main.bicep' = {
-  name: 'privateDnsZoneModule'
+//  Module --> Create a PrivateEndpoint and privateEndpoints/privateDnsZoneGroups
+module privateEndpoint '../main.bicep' = {
+  name: 'private_endpoint'
   params: {
-
     resourceName: resourceName
-
-    groupIds: [
-      'blob'
-    ]
-
-    privateDnsZoneGroup: {
-      privateDNSResourceIds: [
-        privateDNSZone.id
-      ]
-    }
-
-    serviceResourceId: storage.outputs.id
     subnetResourceId: network.outputs.subnetIds[0]
+    serviceResourceId: storage.outputs.id
+    groupIds: [ 'blob']
+    privateDnsZoneGroup: {
+      privateDNSResourceIds: [privateDNSZone.id]
+    }
   }
 }
