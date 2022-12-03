@@ -38,6 +38,7 @@ This module is responsible for deploying networks.  It has the capability to hoo
 | name        | string | The name of the virtual network          |
 | subnetNames | array  | The names of the deployed subnets        |
 | subnetIds   | array  | The resource IDs of the deployed subnets |
+| nsgName     | string | The network security group id            |
 
 ## Examples
 

@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.11.1.770",
-      "templateHash": "5307936118773594977"
+      "version": "0.12.40.16777",
+      "templateHash": "11261167931017736733"
     }
   },
   "parameters": {
@@ -80,7 +80,7 @@
     },
     "newOrExistingNSG": {
       "type": "string",
-      "defaultValue": "none",
+      "defaultValue": "new",
       "metadata": {
         "description": "Create a new, use an existing, or provide no default NSG."
       },
@@ -92,7 +92,7 @@
     },
     "networkSecurityGroupName": {
       "type": "string",
-      "defaultValue": "[uniqueString(resourceGroup().name, parameters('location'))]",
+      "defaultValue": "",
       "metadata": {
         "description": "Name of default NSG to use for subnets."
       }
@@ -122,10 +122,10 @@
     },
     "logsToEnable": {
       "type": "array",
-      "defaultValue": [
+      "allowedValues": [
         "VMProtectionAlerts"
       ],
-      "allowedValues": [
+      "defaultValue": [
         "VMProtectionAlerts"
       ],
       "metadata": {
@@ -134,10 +134,10 @@
     },
     "metricsToEnable": {
       "type": "array",
-      "defaultValue": [
+      "allowedValues": [
         "AllMetrics"
       ],
-      "allowedValues": [
+      "defaultValue": [
         "AllMetrics"
       ],
       "metadata": {
@@ -204,9 +204,9 @@
     ],
     "name": "[format('vnet-{0}{1}', replace(parameters('resourceName'), '-', ''), uniqueString(resourceGroup().id, parameters('resourceName')))]",
     "networkSecurityGroupId": {
-      "id": "[if(equals(parameters('newOrExistingNSG'), 'new'), resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName')), resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName')))]"
+      "id": "[if(equals(parameters('newOrExistingNSG'), 'new'), resourceId('Microsoft.Network/networkSecurityGroups', if(empty(parameters('networkSecurityGroupName')), format('{0}-nsg', variables('name')), parameters('networkSecurityGroupName'))), resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName')))]"
     },
-    "dnsServers_var": {
+    "dnsServers_obj": {
       "dnsServers": "[array(parameters('dnsServers'))]"
     },
     "ddosProtectionPlan": {
@@ -218,7 +218,7 @@
       "condition": "[equals(parameters('newOrExistingNSG'), 'new')]",
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2021-08-01",
-      "name": "[parameters('networkSecurityGroupName')]",
+      "name": "[if(empty(parameters('networkSecurityGroupName')), format('{0}-nsg', variables('name')), parameters('networkSecurityGroupName'))]",
       "location": "[parameters('location')]",
       "properties": {
         "securityRules": [
@@ -275,11 +275,11 @@
           "addressPrefixes": "[parameters('addressPrefixes')]"
         },
         "ddosProtectionPlan": "[if(not(empty(parameters('ddosProtectionPlanId'))), variables('ddosProtectionPlan'), null())]",
-        "dhcpOptions": "[if(not(empty(parameters('dnsServers'))), variables('dnsServers_var'), null())]",
+        "dhcpOptions": "[if(not(empty(parameters('dnsServers'))), variables('dnsServers_obj'), null())]",
         "enableDdosProtection": "[not(empty(parameters('ddosProtectionPlanId')))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+        "[resourceId('Microsoft.Network/networkSecurityGroups', if(empty(parameters('networkSecurityGroupName')), format('{0}-nsg', variables('name')), parameters('networkSecurityGroupName')))]"
       ]
     },
     {
@@ -350,8 +350,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.11.1.770",
-              "templateHash": "7365937863432292829"
+              "version": "0.12.40.16777",
+              "templateHash": "10650308482263192422"
             }
           },
           "parameters": {
@@ -476,8 +476,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.11.1.770",
-              "templateHash": "12826222528883851242"
+              "version": "0.12.40.16777",
+              "templateHash": "10922825643928539317"
             }
           },
           "parameters": {
@@ -630,8 +630,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.11.1.770",
-              "templateHash": "12826222528883851242"
+              "version": "0.12.40.16777",
+              "templateHash": "10922825643928539317"
             }
           },
           "parameters": {
@@ -770,6 +770,13 @@
       },
       "metadata": {
         "description": "The resource IDs of the deployed subnets"
+      }
+    },
+    "nsgName": {
+      "type": "string",
+      "value": "[if(not(equals(parameters('newOrExistingNSG'), 'none')), if(empty(parameters('networkSecurityGroupName')), format('{0}-nsg', variables('name')), parameters('networkSecurityGroupName')), '')]",
+      "metadata": {
+        "description": "The network security group id"
       }
     }
   }
