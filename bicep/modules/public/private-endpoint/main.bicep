@@ -111,11 +111,11 @@ resource resource_lock 'Microsoft.Authorization/locks@2017-04-01' = if (lock != 
 @description('The resource group the private endpoint was deployed into.')
 output resourceGroupName string = resourceGroup().name
 
-@description('The resource ID of the private endpoint.')
-output resourceId string = privateEndpoint.id
-
 @description('The name of the private endpoint.')
 output name string = privateEndpoint.name
+
+@description('The resource ID of the private endpoint.')
+output id string = privateEndpoint.id
 
 @description('The location the resource was deployed into.')
 output location string = privateEndpoint.location
