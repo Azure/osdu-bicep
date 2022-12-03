@@ -32,8 +32,8 @@ This module supports the following features.
 | Name              | Type   | Description                                                |
 | :---------------- | :----: | :--------------------------------------------------------- |
 | resourceGroupName | string | The resource group the private endpoint was deployed into. |
-| resourceId        | string | The resource ID of the private endpoint.                   |
 | name              | string | The name of the private endpoint.                          |
+| id                | string | The resource ID of the private endpoint.                   |
 | location          | string | The location the resource was deployed into.               |
 
 ## Examples

@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.10.61.36676",
-      "templateHash": "12168213662573013531"
+      "version": "0.12.40.16777",
+      "templateHash": "18408830660327806831"
     }
   },
   "parameters": {
@@ -174,8 +174,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.10.61.36676",
-              "templateHash": "4156394829070142351"
+              "version": "0.12.40.16777",
+              "templateHash": "2962080553890533733"
             }
           },
           "parameters": {
@@ -226,6 +226,13 @@
             }
           ],
           "outputs": {
+            "resourceGroupName": {
+              "type": "string",
+              "value": "[resourceGroup().name]",
+              "metadata": {
+                "description": "The resource group the private endpoint DNS zone group was deployed into."
+              }
+            },
             "name": {
               "type": "string",
               "value": "[parameters('resourceName')]",
@@ -233,18 +240,11 @@
                 "description": "The name of the private endpoint DNS zone group."
               }
             },
-            "resourceId": {
+            "id": {
               "type": "string",
               "value": "[resourceId('Microsoft.Network/privateEndpoints/privateDnsZoneGroups', parameters('privateEndpointName'), parameters('resourceName'))]",
               "metadata": {
                 "description": "The resource ID of the private endpoint DNS zone group."
-              }
-            },
-            "resourceGroupName": {
-              "type": "string",
-              "value": "[resourceGroup().name]",
-              "metadata": {
-                "description": "The resource group the private endpoint DNS zone group was deployed into."
               }
             }
           }
@@ -296,8 +296,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.10.61.36676",
-              "templateHash": "8738763772398081661"
+              "version": "0.12.40.16777",
+              "templateHash": "17398245239701469576"
             }
           },
           "parameters": {
@@ -409,18 +409,18 @@
         "description": "The resource group the private endpoint was deployed into."
       }
     },
-    "resourceId": {
-      "type": "string",
-      "value": "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]",
-      "metadata": {
-        "description": "The resource ID of the private endpoint."
-      }
-    },
     "name": {
       "type": "string",
       "value": "[parameters('resourceName')]",
       "metadata": {
         "description": "The name of the private endpoint."
+      }
+    },
+    "id": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]",
+      "metadata": {
+        "description": "The resource ID of the private endpoint."
       }
     },
     "location": {
