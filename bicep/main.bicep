@@ -31,7 +31,7 @@ param clusterAdminIds array = []
 // Network Blade 
 /////////////////
 @description('Name of the Virtual Network')
-param virtualNetworkName string = 'central-spoke-vnet'
+param virtualNetworkName string = 'osdu-network'
 
 @description('Boolean indicating whether the VNet is new or existing')
 param virtualNetworkNewOrExisting string = 'new'
@@ -69,8 +69,7 @@ param partitions array = [
 param ClusterSize string = 'CostOptimised'
 
 @description('Feature Flag on Private Link')
-// param enablePrivateLink bool = true // TODO: Enable when Private Link is ready
-var enablePrivateLink = false
+param enablePrivateLink bool = true
 
 @description('Optional. Customer Managed Encryption Key.')
 param cmekConfiguration object = {
@@ -422,6 +421,73 @@ module logAnalytics 'br:osdubicep.azurecr.io/public/log-analytics:1.0.4' = {
   ]
 }
 
+/*
+.__   __.  _______ .___________.____    __    ____  ______   .______       __  ___ 
+|  \ |  | |   ____||           |\   \  /  \  /   / /  __  \  |   _  \     |  |/  / 
+|   \|  | |  |__   `---|  |----` \   \/    \/   / |  |  |  | |  |_)  |    |  '  /  
+|  . `  | |   __|      |  |       \            /  |  |  |  | |      /     |    <   
+|  |\   | |  |____     |  |        \    /\    /   |  `--'  | |  |\  \----.|  .  \  
+|__| \__| |_______|    |__|         \__/  \__/     \______/  | _| `._____||__|\__\ 
+*/
+
+var vnetId = {
+  new: virtualNetworkNewOrExisting == 'new' ? network.outputs.id : null
+  existing: resourceId(virtualNetworkResourceGroup, 'Microsoft.Network/virtualNetworks', virtualNetworkName)
+}
+
+var subnetId = '${vnetId[virtualNetworkNewOrExisting]}/subnets/${subnetName}'
+  
+module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.5' = if (virtualNetworkNewOrExisting == 'new') {
+  name: '${commonLayerConfig.name}-virtual-network'
+  params: {
+    resourceName: virtualNetworkName
+    location: location
+
+    // Assign Tags
+    tags: {
+      layer: commonLayerConfig.displayName
+    }
+
+    // Hook up Diagnostics
+    diagnosticWorkspaceId: logAnalytics.outputs.id
+
+    // Configure Service
+    addressPrefixes: [
+      virtualNetworkAddressPrefix
+    ]
+    subnets: [
+      {
+        name: subnetName
+        addressPrefix: subnetAddressPrefix
+        privateEndpointNetworkPolicies: 'Disabled'
+        privateLinkServiceNetworkPolicies: 'Enabled'
+        serviceEndpoints: [
+          {
+            service: 'Microsoft.Storage'
+          }
+          {
+            service: 'Microsoft.KeyVault'
+          }
+          {
+            service: 'Microsoft.ContainerRegistry'
+          }
+        ]
+      }
+    ]
+
+    // Assign RBAC
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: 'Contributor'
+        principalIds: [
+          stampIdentity.outputs.principalId
+        ]
+        principalType: 'ServicePrincipal'
+      }
+    ]
+  }
+}
+
 
 /*
  __  ___  ___________    ____ ____    ____  ___      __    __   __      .___________.
@@ -510,9 +576,6 @@ module keyvault 'br:osdubicep.azurecr.io/public/azure-keyvault:1.0.3' = {
         principalType: 'ServicePrincipal'
       }
     ]
-
-    // Hookup Private Links
-    privateLinkSettings: privateLinkSettings
   }
 }
 
@@ -528,80 +591,28 @@ module keyvaultSecrets './modules_private/keyvault_secrets.bicep' = {
 }
 
 
-/*
-.__   __.  _______ .___________.____    __    ____  ______   .______       __  ___ 
-|  \ |  | |   ____||           |\   \  /  \  /   / /  __  \  |   _  \     |  |/  / 
-|   \|  | |  |__   `---|  |----` \   \/    \/   / |  |  |  | |  |_)  |    |  '  /  
-|  . `  | |   __|      |  |       \            /  |  |  |  | |      /     |    <   
-|  |\   | |  |____     |  |        \    /\    /   |  `--'  | |  |\  \----.|  .  \  
-|__| \__| |_______|    |__|         \__/  \__/     \______/  | _| `._____||__|\__\ 
-*/
+var vaultDNSZoneName = 'privatelink.vaultcore.azure.net'
 
-var vnetId = {
-  new: virtualNetworkNewOrExisting == 'new' ? network.outputs.id : null
-  existing: resourceId(virtualNetworkResourceGroup, 'Microsoft.Network/virtualNetworks', virtualNetworkName)
+resource vaultDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (enablePrivateLink) {
+  name: vaultDNSZoneName
+  location: 'global'
+  properties: {}
 }
 
-var subnetId = '${vnetId[virtualNetworkNewOrExisting]}/subnets/${subnetName}'
-
-var privateLinkSettings = enablePrivateLink ? {
-  vnetId: vnetId[virtualNetworkNewOrExisting]
-  subnetId: subnetId
-} : {
-  subnetId: '1' // 1 is don't use.
-  vnetId: '1'  // 1 is don't use.
-}
-  
-module network 'br:osdubicep.azurecr.io/public/virtual-network:1.0.4' = if (virtualNetworkNewOrExisting == 'new') {
-  name: '${commonLayerConfig.name}-virtual-network'
+module vaultEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = {
+  name: '${commonLayerConfig.name}-azure-keyvault-endpoint'
   params: {
-    resourceName: virtualNetworkName
-    location: location
-
-    // Assign Tags
-    tags: {
-      layer: commonLayerConfig.displayName
+    resourceName: '${keyvault.outputs.name}-endpoint'
+    subnetResourceId: network.outputs.subnetIds[0]
+    serviceResourceId: keyvault.outputs.id
+    groupIds: [ 'vault']
+    privateDnsZoneGroup: {
+      privateDNSResourceIds: [vaultDNSZone.id]
     }
-
-    // Hook up Diagnostics
-    diagnosticWorkspaceId: logAnalytics.outputs.id
-
-    // Configure Service
-    addressPrefixes: [
-      virtualNetworkAddressPrefix
-    ]
-    subnets: [
-      {
-        name: subnetName
-        addressPrefix: subnetAddressPrefix
-        privateEndpointNetworkPolicies: 'Disabled'
-        privateLinkServiceNetworkPolicies: 'Enabled'
-        serviceEndpoints: [
-          {
-            service: 'Microsoft.Storage'
-          }
-          {
-            service: 'Microsoft.KeyVault'
-          }
-          {
-            service: 'Microsoft.ContainerRegistry'
-          }
-        ]
-      }
-    ]
-
-    // Assign RBAC
-    roleAssignments: [
-      {
-        roleDefinitionIdOrName: 'Contributor'
-        principalIds: [
-          stampIdentity.outputs.principalId
-        ]
-        principalType: 'ServicePrincipal'
-      }
-    ]
   }
 }
+
+
 
 
 /*
@@ -640,9 +651,6 @@ module registry 'br:osdubicep.azurecr.io/public/container-registry:1.0.2' = {
         principalType: 'ServicePrincipal'
       }
     ]
-
-    // Hook up Private Links
-    privateLinkSettings: privateLinkSettings
   }
 }
 
@@ -695,9 +703,6 @@ module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
       }
     ]
 
-    // Hookup Private Links
-    privateLinkSettings: privateLinkSettings
-
     // Hookup Customer Managed Encryption Key
     cmekConfiguration: cmekConfiguration
 
@@ -705,6 +710,28 @@ module configStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' = {
     keyVaultName: keyvault.outputs.name
     storageAccountSecretName: commonLayerConfig.secrets.storageAccountName
     storageAccountKeySecretName: commonLayerConfig.secrets.storageAccountKey
+  }
+}
+
+var storageDNSZoneForwarder = 'blob.${environment().suffixes.storage}'
+var storageDnsZoneName = 'privatelink.${storageDNSZoneForwarder}'
+
+resource storageDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (enablePrivateLink) {
+  name: storageDnsZoneName
+  location: 'global'
+  properties: {}
+}
+
+module storageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = {
+  name: '${commonLayerConfig.name}-azure-storage-endpoint'
+  params: {
+    resourceName: '${substring(configStorage.outputs.name, 0, 30)}-endpoint'
+    subnetResourceId: network.outputs.subnetIds[0]
+    serviceResourceId: configStorage.outputs.id
+    groupIds: [ 'blob']
+    privateDnsZoneGroup: {
+      privateDNSResourceIds: [storageDNSZone.id]
+    }
   }
 }
 
@@ -758,9 +785,6 @@ module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.15' = {
       }
     ]
 
-    // Hookup Private Links
-    privateLinkSettings: privateLinkSettings
-
     // Hookup Customer Managed Encryption Key
     systemAssignedIdentity: false
     userAssignedIdentities: !empty(cmekConfiguration.identityId) ? {
@@ -780,6 +804,27 @@ module database 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.15' = {
 
     // Cross Tenant
     crossTenant: crossTenant
+  }
+}
+
+var cosmosDnsZoneName = 'privatelink.documents.azure.com'
+
+resource cosmosDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (enablePrivateLink) {
+  name: cosmosDnsZoneName
+  location: 'global'
+  properties: {}
+}
+
+module graphEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = {
+  name: '${commonLayerConfig.name}-cosmos-db-endpoint'
+  params: {
+    resourceName: '${substring(database.outputs.name, 0, 30)}-endpoint'
+    subnetResourceId: network.outputs.subnetIds[0]
+    serviceResourceId: database.outputs.id
+    groupIds: [ 'sql']
+    privateDnsZoneGroup: {
+      privateDNSResourceIds: [cosmosDNSZone.id]
+    }
   }
 }
 
@@ -825,9 +870,6 @@ module partitionStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' =
       }
     ]
 
-    // Hookup Private Links
-    privateLinkSettings: privateLinkSettings
-
     // Hookup Customer Managed Encryption Key
     cmekConfiguration: cmekConfiguration
 
@@ -838,10 +880,23 @@ module partitionStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' =
   }
 }]
 
+module partitionStorageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = [for (partition, index) in partitions: {
+  name: '${partitionLayerConfig.name}-azure-storage-endpoint-${index}'
+  params: {
+    resourceName: '${substring(partitionStorage[index].outputs.name, 0, 30)}-endpoint'
+    subnetResourceId: network.outputs.subnetIds[0]
+    serviceResourceId: partitionStorage[index].outputs.id
+    groupIds: [ 'blob']
+    privateDnsZoneGroup: {
+      privateDNSResourceIds: [storageDNSZone.id]
+    }
+  }
+}]
+
 module partitionDb 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.15' = [for (partition, index) in partitions: {
   name: '${partitionLayerConfig.name}-cosmos-db-${index}'
   params: {
-    resourceName: 'data${index}${uniqueString(partition.name)}'
+    resourceName: 'data${index}${substring(uniqueString(partition.name), 0, 6)}'
     resourceLocation: location
 
     // Assign Tags
@@ -877,9 +932,6 @@ module partitionDb 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.15' = [for (par
       }
     ]
 
-    // Hookup Private Links
-    privateLinkSettings: privateLinkSettings
-
     // Hookup Customer Managed Encryption Key
     systemAssignedIdentity: false
     userAssignedIdentities: !empty(cmekConfiguration.identityId) ? {
@@ -899,6 +951,19 @@ module partitionDb 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.15' = [for (par
 
     // Cross Tenant
     crossTenant: crossTenant
+  }
+}]
+
+module partitionDbEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = [for (partition, index) in partitions: {
+  name: '${partitionLayerConfig.name}-cosmos-db-endpoint-${index}'
+  params: {
+    resourceName: '${substring(partitionDb[index].outputs.name, 0, 30)}-endpoint'
+    subnetResourceId: network.outputs.subnetIds[0]
+    serviceResourceId: partitionDb[index].outputs.id
+    groupIds: [ 'sql']
+    privateDnsZoneGroup: {
+      privateDNSResourceIds: [cosmosDNSZone.id]
+    }
   }
 }]
 
