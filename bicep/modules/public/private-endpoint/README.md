@@ -80,7 +80,7 @@ resource privateDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
 }
 
 //  Module --> Create a Private DNS zone
-module endpoint '.br:osdubicep.azurecr.io/bicep/modules/public/private-endpoint:1.0.1' = {
+module endpoint '.br:osdubicep.azurecr.io/bicep/modules/public/private-endpoint:1.0.2' = {
   name: 'privateDnsZoneModule'
   params: {
 

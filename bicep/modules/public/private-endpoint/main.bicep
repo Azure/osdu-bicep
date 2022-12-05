@@ -49,9 +49,11 @@ param customDnsConfigs array = []
 @description('Optional. Manual PrivateLink Service Connections.')
 param manualPrivateLinkServiceConnections array = []
 
+var name = 'endpoint-${replace(resourceName, '-', '')}${uniqueString(resourceGroup().id, resourceName)}'
+
 // TODO Should I change serviceResourceId(param) to accept an array of all the resources yo want to assign this privateEndpoint to?
 resource privateEndpoint 'Microsoft.Network/privateEndpoints@2022-05-01' = {
-  name: resourceName
+  name: length(name) > 64 ? substring(name, 0, 64) : name
   location: location
   tags: tags
   properties: {

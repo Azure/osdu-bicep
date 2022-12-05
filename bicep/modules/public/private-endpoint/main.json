@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.12.40.16777",
-      "templateHash": "18408830660327806831"
+      "templateHash": "13712824476116043490"
     }
   },
   "parameters": {
@@ -109,11 +109,14 @@
       }
     }
   },
+  "variables": {
+    "name": "[format('endpoint-{0}{1}', replace(parameters('resourceName'), '-', ''), uniqueString(resourceGroup().id, parameters('resourceName')))]"
+  },
   "resources": [
     {
       "type": "Microsoft.Network/privateEndpoints",
       "apiVersion": "2022-05-01",
-      "name": "[parameters('resourceName')]",
+      "name": "[if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name'))]",
       "location": "[parameters('location')]",
       "tags": "[parameters('tags')]",
       "properties": {
@@ -140,21 +143,21 @@
       "condition": "[not(equals(parameters('lock'), 'NotSpecified'))]",
       "type": "Microsoft.Authorization/locks",
       "apiVersion": "2017-04-01",
-      "scope": "[format('Microsoft.Network/privateEndpoints/{0}', parameters('resourceName'))]",
-      "name": "[format('{0}-{1}-lock', parameters('resourceName'), parameters('lock'))]",
+      "scope": "[format('Microsoft.Network/privateEndpoints/{0}', if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name')))]",
+      "name": "[format('{0}-{1}-lock', if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name')), parameters('lock'))]",
       "properties": {
         "level": "[parameters('lock')]",
         "notes": "[if(equals(parameters('lock'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot modify the resource or child resources.')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]"
+        "[resourceId('Microsoft.Network/privateEndpoints', if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name')))]"
       ]
     },
     {
       "condition": "[not(empty(parameters('privateDnsZoneGroup')))]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
-      "name": "[format('{0}-{1}', deployment().name, parameters('resourceName'))]",
+      "name": "[format('{0}-{1}', deployment().name, if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name')))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -165,7 +168,7 @@
             "value": "[parameters('privateDnsZoneGroup').privateDNSResourceIds]"
           },
           "privateEndpointName": {
-            "value": "[parameters('resourceName')]"
+            "value": "[if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name'))]"
           }
         },
         "template": {
@@ -251,7 +254,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]"
+        "[resourceId('Microsoft.Network/privateEndpoints', if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name')))]"
       ]
     },
     {
@@ -287,7 +290,7 @@
             "value": "[if(contains(parameters('roleAssignments')[copyIndex()], 'delegatedManagedIdentityResourceId'), parameters('roleAssignments')[copyIndex()].delegatedManagedIdentityResourceId, '')]"
           },
           "resourceId": {
-            "value": "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]"
+            "value": "[resourceId('Microsoft.Network/privateEndpoints', if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name')))]"
           }
         },
         "template": {
@@ -397,7 +400,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]"
+        "[resourceId('Microsoft.Network/privateEndpoints', if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name')))]"
       ]
     }
   ],
@@ -411,21 +414,21 @@
     },
     "name": {
       "type": "string",
-      "value": "[parameters('resourceName')]",
+      "value": "[if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name'))]",
       "metadata": {
         "description": "The name of the private endpoint."
       }
     },
     "id": {
       "type": "string",
-      "value": "[resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName'))]",
+      "value": "[resourceId('Microsoft.Network/privateEndpoints', if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name')))]",
       "metadata": {
         "description": "The resource ID of the private endpoint."
       }
     },
     "location": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/privateEndpoints', parameters('resourceName')), '2022-05-01', 'full').location]",
+      "value": "[reference(resourceId('Microsoft.Network/privateEndpoints', if(greater(length(variables('name')), 64), substring(variables('name'), 0, 64), variables('name'))), '2022-05-01', 'full').location]",
       "metadata": {
         "description": "The location the resource was deployed into."
       }
