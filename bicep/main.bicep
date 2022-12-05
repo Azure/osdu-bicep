@@ -883,7 +883,7 @@ module partitionStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' =
 module partitionStorageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = [for (partition, index) in partitions: {
   name: '${partitionLayerConfig.name}-azure-storage-endpoint-${index}'
   params: {
-    resourceName: '${substring(partitionStorage[index].outputs.name, 0, 30)}-endpoint'
+    resourceName: '${substring(partitionStorage[index].outputs.name, 0, 55)}-endpoint'
     subnetResourceId: network.outputs.subnetIds[0]
     serviceResourceId: partitionStorage[index].outputs.id
     groupIds: [ 'blob']
