@@ -602,7 +602,7 @@ resource vaultDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (enabl
 module vaultEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = {
   name: '${commonLayerConfig.name}-azure-keyvault-endpoint'
   params: {
-    resourceName: '${keyvault.outputs.name}-endpoint'
+    resourceName: keyvault.outputs.name
     subnetResourceId: network.outputs.subnetIds[0]
     serviceResourceId: keyvault.outputs.id
     groupIds: [ 'vault']
@@ -725,7 +725,7 @@ resource storageDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (ena
 module storageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = {
   name: '${commonLayerConfig.name}-azure-storage-endpoint'
   params: {
-    resourceName: '${substring(configStorage.outputs.name, 0, 30)}-endpoint'
+    resourceName: configStorage.outputs.name
     subnetResourceId: network.outputs.subnetIds[0]
     serviceResourceId: configStorage.outputs.id
     groupIds: [ 'blob']
@@ -818,7 +818,7 @@ resource cosmosDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (enab
 module graphEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = {
   name: '${commonLayerConfig.name}-cosmos-db-endpoint'
   params: {
-    resourceName: '${substring(database.outputs.name, 0, 30)}-endpoint'
+    resourceName: database.outputs.name
     subnetResourceId: network.outputs.subnetIds[0]
     serviceResourceId: database.outputs.id
     groupIds: [ 'sql']
@@ -883,7 +883,7 @@ module partitionStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' =
 module partitionStorageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = [for (partition, index) in partitions: {
   name: '${partitionLayerConfig.name}-azure-storage-endpoint-${index}'
   params: {
-    resourceName: '${substring(partitionStorage[index].outputs.name, 0, 55)}-endpoint'
+    resourceName: partitionStorage[index].outputs.name
     subnetResourceId: network.outputs.subnetIds[0]
     serviceResourceId: partitionStorage[index].outputs.id
     groupIds: [ 'blob']
@@ -957,7 +957,7 @@ module partitionDb 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.15' = [for (par
 module partitionDbEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = [for (partition, index) in partitions: {
   name: '${partitionLayerConfig.name}-cosmos-db-endpoint-${index}'
   params: {
-    resourceName: '${substring(partitionDb[index].outputs.name, 0, 30)}-endpoint'
+    resourceName: partitionDb[index].outputs.name
     subnetResourceId: network.outputs.subnetIds[0]
     serviceResourceId: partitionDb[index].outputs.id
     groupIds: [ 'sql']
@@ -968,6 +968,7 @@ module partitionDbEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.
 }]
 
 
+
 /*
  __  ___  __    __  .______    _______ .______      .__   __.  _______ .___________. _______     _______.
 |  |/  / |  |  |  | |   _  \  |   ____||   _  \     |  \ |  | |   ____||           ||   ____|   /       |
@@ -976,8 +977,6 @@ module partitionDbEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.
 |  .  \  |  `--'  | |  |_)  | |  |____ |  |\  \----.|  |\   | |  |____     |  |     |  |____.----)   |   
 |__|\__\  \______/  |______/  |_______|| _| `._____||__| \__| |_______|    |__|     |_______|_______/    
 */
-
-
 
 module cluster 'modules_private/aks_cluster.bicep' = {
   name: '${serviceLayerConfig.name}-cluster'
