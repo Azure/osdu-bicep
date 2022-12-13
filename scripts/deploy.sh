@@ -36,6 +36,10 @@ if [ -z $APPLICATION_OBJECT_ID ]; then
   exit 1
 fi
 
+if [ -z $ENABLE_PRIVATE_LINK ]; then
+  ENABLE_PRIVATE_LINK=false
+fi
+
 # Check if Azure CLI Logged in, if not prompt to login then set default values.
 AZURE_ACCOUNT=$(az account show --query '[tenantId, id, user.name]' -otsv) 
 if [ -z "$AZURE_ACCOUNT" ]; then
@@ -154,6 +158,7 @@ az deployment group create --template-file $TEMPLATE \
       --parameters applicationId=$APPLICATION_OBJECT_ID \
       --parameters applicationClientId=$APPLICATION_CLIENT_ID \
       --parameters applicationClientSecret=$APPLICATION_CLIENT_SECRET \
+      --parameters enablePrivateLink=$ENABLE_PRIVATE_LINK \
       -ojson 1>/dev/null
 
 if [[ $? == 0 ]]; then

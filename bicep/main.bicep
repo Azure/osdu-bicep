@@ -81,6 +81,9 @@ param cmekConfiguration object = {
 @description('Optional. Indicates if the application is used in a cross tenant scenario or not.')
 param crossTenant bool = false
 
+@description('Optional. Indicates if software should be installed.')
+param enableSoftwareLoad bool = true
+
 /////////////////////////////////
 // Common Resources Configuration 
 /////////////////////////////////
@@ -353,7 +356,7 @@ var serviceLayerConfig = {
   gitops: {
     name: 'sample-stamp'
     url: 'https://github.com/danielscholl/gitops-sample-stamp'
-    branch: 'main'
+    tag: 'v0.0.1'
     path: './clusters/sample-stamp'
   }
 }
@@ -599,7 +602,7 @@ resource vaultDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (enabl
   properties: {}
 }
 
-module vaultEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = {
+module vaultEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = if (enablePrivateLink) {
   name: '${commonLayerConfig.name}-azure-keyvault-endpoint'
   params: {
     resourceName: keyvault.outputs.name
@@ -722,7 +725,7 @@ resource storageDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (ena
   properties: {}
 }
 
-module storageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = {
+module storageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = if (enablePrivateLink) {
   name: '${commonLayerConfig.name}-azure-storage-endpoint'
   params: {
     resourceName: configStorage.outputs.name
@@ -815,7 +818,7 @@ resource cosmosDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (enab
   properties: {}
 }
 
-module graphEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = {
+module graphEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = if (enablePrivateLink) {
   name: '${commonLayerConfig.name}-cosmos-db-endpoint'
   params: {
     resourceName: database.outputs.name
@@ -880,7 +883,7 @@ module partitionStorage 'br:osdubicep.azurecr.io/public/storage-account:1.0.5' =
   }
 }]
 
-module partitionStorageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = [for (partition, index) in partitions: {
+module partitionStorageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = [for (partition, index) in partitions: if (enablePrivateLink) {
   name: '${partitionLayerConfig.name}-azure-storage-endpoint-${index}'
   params: {
     resourceName: partitionStorage[index].outputs.name
@@ -954,7 +957,7 @@ module partitionDb 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.15' = [for (par
   }
 }]
 
-module partitionDbEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = [for (partition, index) in partitions: {
+module partitionDbEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = [for (partition, index) in partitions: if (enablePrivateLink) {
   name: '${partitionLayerConfig.name}-cosmos-db-endpoint-${index}'
   params: {
     resourceName: partitionDb[index].outputs.name
@@ -1011,14 +1014,14 @@ module cluster 'modules_private/aks_cluster.bicep' = {
 
 
 //--------------Flux Config---------------
-module flux 'modules_private/flux_config.bicep' = {
+module flux 'modules_private/flux_config.bicep' = if (enableSoftwareLoad) {
   name: '${serviceLayerConfig.name}-cluster-gitops'
   params: {
     aksName: cluster.outputs.name
     aksFluxAddOnReleaseNamespace: cluster.outputs.fluxReleaseNamespace
     fluxConfigName: serviceLayerConfig.gitops.name
     fluxConfigRepo: serviceLayerConfig.gitops.url
-    fluxConfigRepoBranch: serviceLayerConfig.gitops.branch
+    fluxConfigRepoTag: serviceLayerConfig.gitops.tag
     fluxRepoPath: serviceLayerConfig.gitops.path
   }
   dependsOn: [

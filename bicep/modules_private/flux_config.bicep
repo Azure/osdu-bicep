@@ -17,7 +17,10 @@ resource aks 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' exi
 param fluxConfigRepo string
 
 @description('The Git Repository Branch where your flux configuration is homed')
-param fluxConfigRepoBranch string
+param fluxConfigRepoBranch string = ''
+
+@description('The Git Repository Tag where your flux configuration is homed')
+param fluxConfigRepoTag string = ''
 
 @description('The name of the flux configuration to apply')
 param fluxConfigName string = 'bootstrap'
@@ -48,8 +51,8 @@ resource fluxConfig 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-0
       timeoutInSeconds: 180
       syncIntervalInSeconds: 300
       repositoryRef: {
-        branch: fluxConfigRepoBranch
-        tag: null
+        branch: !empty(fluxConfigRepoBranch) ? fluxConfigRepoBranch : null
+        tag: !empty(fluxConfigRepoTag) ? fluxConfigRepoTag : null
         semver: null
         commit: null
       }
