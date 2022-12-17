@@ -9,19 +9,39 @@
 @description('Specify the Azure region to place the application definition.')
 param location string = resourceGroup().location
 
+@description('Optional. Indicates if the application is used in a cross tenant scenario or not.')
+param crossTenant bool = false
 
 /////////////////
-// Identity Blade 
+// Settings Blade 
 /////////////////
-@description('Specify the AD Application Object Id.')
-param applicationId string
-
 @description('Specify the AD Application Client Id.')
 param applicationClientId string
 
-@description('Specify the AD Application Client Secret.')
-@secure()
-param applicationClientSecret string
+@description('List of Data Partitions')
+param partitions array = [
+  {
+    name: 'opendes'
+  }
+]
+
+@allowed([
+  'CostOptimised'
+  'Standard'
+  'HighSpec'
+])
+@description('The Cluster Sizing')
+param clusterSize string = 'CostOptimised'
+
+@description('Optional. Customer Managed Encryption Key.')
+param cmekConfiguration object = {
+  kvUrl: ''
+  keyName: ''
+  identityId: ''
+}
+
+@description('Optional. Indicates if software should be installed.')
+param enableSoftwareLoad bool = true
 
 @description('Optional: Specify the AD Users and/or Groups that can manage the cluster.')
 param clusterAdminIds array = []
@@ -48,41 +68,8 @@ param subnetName string = 'clustersubnet'
 @description('Subnet address prefix')
 param subnetAddressPrefix string = '10.1.0.0/20'
 
-
-///////////////////////
-// Configuration Blade 
-///////////////////////
-
-@description('List of Data Partitions')
-param partitions array = [
-  {
-    name: 'opendes'
-  }
-]
-
-@allowed([
-  'CostOptimised'
-  'Standard'
-  'HighSpec'
-])
-@description('The Cluster Sizing')
-param ClusterSize string = 'CostOptimised'
-
 @description('Feature Flag on Private Link')
 param enablePrivateLink bool = false
-
-@description('Optional. Customer Managed Encryption Key.')
-param cmekConfiguration object = {
-  kvUrl: ''
-  keyName: ''
-  identityId: ''
-}
-
-@description('Optional. Indicates if the application is used in a cross tenant scenario or not.')
-param crossTenant bool = false
-
-@description('Optional. Indicates if software should be installed.')
-param enableSoftwareLoad bool = true
 
 /////////////////////////////////
 // Common Resources Configuration 
@@ -546,16 +533,8 @@ module keyvault 'br:osdubicep.azurecr.io/public/azure-keyvault:1.0.3' = {
       }
       // Azure AD Secrets
       {
-        secretName: commonLayerConfig.secrets.applicationId
-        secretValue: applicationId
-      }
-      {
         secretName: commonLayerConfig.secrets.clientId
         secretValue: applicationClientId
-      }
-      {
-        secretName: commonLayerConfig.secrets.clientSecret
-        secretValue: applicationClientSecret
       }
       {
         secretName: commonLayerConfig.secrets.applicationPrincipalId
@@ -919,7 +898,7 @@ module partitionDb 'br:osdubicep.azurecr.io/public/cosmos-db:1.0.15' = [for (par
         containers: partitionLayerConfig.database.containers
       }
     ]
-    maxThroughput: partitionLayerConfig.database[ClusterSize].throughput
+    maxThroughput: partitionLayerConfig.database[clusterSize].throughput
     backupPolicyType: partitionLayerConfig.database.backup
 
     // Assign RBAC
@@ -1001,7 +980,7 @@ module cluster 'modules_private/aks_cluster.bicep' = {
     workspaceId: logAnalytics.outputs.id
 
     // Configure NodePools
-    ClusterSize: ClusterSize
+    ClusterSize: clusterSize
 
     // Configure Add Ons
     enable_aad: empty(clusterAdminIds) == true ? false : true
