@@ -1,29 +1,18 @@
-/*
-  This is a flux GitOps Configuration for the Baseline Example
-  https://github.com/mspnp/aks-baseline
-*/
-
-@description('The name of the AKS cluster.')
 param aksName string
 
-@description('The namespace for flux.')
-param aksFluxAddOnReleaseNamespace string
+param aksFluxAddOnReleaseNamespace string = 'flux-system'
 
 resource aks 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' existing = {
   name: aksName
 }
 
 @description('The Git Repository URL where your flux configuration is homed')
-param fluxConfigRepo string
+param fluxConfigRepo string = '' //'https://github.com/Azure/gitops-flux2-kustomize-helm-mt' //'https://github.com/fluxcd/flux2-kustomize-helm-example'
 
-@description('The Git Repository Branch where your flux configuration is homed')
-param fluxConfigRepoBranch string = ''
-
-@description('The Git Repository Tag where your flux configuration is homed')
-param fluxConfigRepoTag string = ''
+param fluxConfigRepoBranch string = 'main'
 
 @description('The name of the flux configuration to apply')
-param fluxConfigName string = 'bootstrap'
+param fluxConfigName string = 'flux-system'
 var cleanFluxConfigName = toLower(fluxConfigName)
 
 @secure()
@@ -36,10 +25,10 @@ var fluxRepoUsernameB64 = base64(fluxRepoUsername)
 param fluxRepoPassword string = ''
 var fluxRepoPasswordB64 = base64(fluxRepoPassword)
 
-@description('The Git Repository path for manifests')
-param fluxRepoPath string
+param fluxRepoComponentsPath string = './stamp/components'
+param fluxRepoApplicationssPath string = './stamp/applications'
 
-resource fluxConfig 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-07-01' = {
+resource fluxConfig 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-03-01' = {
   scope: aks
   name: cleanFluxConfigName
   properties: {
@@ -51,29 +40,30 @@ resource fluxConfig 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-0
       timeoutInSeconds: 180
       syncIntervalInSeconds: 300
       repositoryRef: {
-        branch: !empty(fluxConfigRepoBranch) ? fluxConfigRepoBranch : null
-        tag: !empty(fluxConfigRepoTag) ? fluxConfigRepoTag : null
-        semver: null
-        commit: null
+        branch: fluxConfigRepoBranch
       }
-      sshKnownHosts: ''
-      httpsUser: null
-      httpsCACert: null
-      localAuthRef: null
     }
     configurationProtectedSettings: !empty(fluxRepoUsernameB64) && !empty(fluxRepoPasswordB64) ? {
       username: fluxRepoUsernameB64
       password: fluxRepoPasswordB64
     } : {}
     kustomizations: {
-      config: {
-        path: fluxRepoPath
-        dependsOn: []
+      components: {
+        path: fluxRepoComponentsPath
         timeoutInSeconds: 300
         syncIntervalInSeconds: 300
         retryIntervalInSeconds: 300
         prune: true
-        force: false
+      }
+      applications: {
+        path: fluxRepoApplicationssPath
+        dependsOn: [
+          'components'
+        ]
+        timeoutInSeconds: 300
+        syncIntervalInSeconds: 300
+        retryIntervalInSeconds: 300
+        prune: true
       }
     }
   }

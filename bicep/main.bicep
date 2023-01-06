@@ -341,10 +341,11 @@ var serviceLayerConfig = {
     'community.opengroup.org:5555/osdu/platform/system/search-service/search-service-v0-16-1:latest'
   ]
   gitops: {
-    name: 'sample-stamp'
-    url: 'https://github.com/danielscholl/gitops-sample-stamp'
-    tag: 'v0.0.1'
-    path: './clusters/sample-stamp'
+    name: 'flux-system'
+    url: 'https://github.com/azure/osdu-bicep'
+    branch: 'main'
+    components: './stamp/components'
+    applications: './stamp/applications'
   }
 }
 
@@ -991,6 +992,79 @@ module cluster 'modules_private/aks_cluster.bicep' = {
   }
 }
 
+@description('Elastic User Pool presets')
+var elasticPoolPresets = {
+  // 2 vCPU, 4 GiB RAM, 8 GiB Temp Disk, (1600) IOPS, 128 GB Managed OS Disk
+  CostOptimised : {
+    vmSize: 'Standard_DS3_v2'
+  }
+  // 2 vCPU, 8 GiB RAM, 16GiB Temp Disk (4000) IOPS, 128 GB Managed OS Disk
+  Standard : {
+    vmSize: 'Standard_DS3_v2'
+  }
+  // 4 vCPU, 16 GiB RAM, 32 GiB SSD, (8000) IOPS, 128 GB Managed OS Disk
+  HighSpec : {
+    vmSize: 'Standard_DS3_v2'
+  }
+}
+
+module espool1 'modules_private/aks_agent_pool.bicep' = {
+  name: '${serviceLayerConfig.name}-espool1'
+  params: {
+    AksName: cluster.outputs.aksClusterName
+    PoolName: 'espoolz1'
+    agentVMSize: elasticPoolPresets[clusterSize].vmSize
+    agentCount: 2
+    agentCountMax: 4
+    availabilityZones: [
+      '1'
+    ]
+    subnetId: ''
+    nodeTaints: ['app=elasticsearch:NoSchedule']
+    nodeLabels: {
+      app: 'elasticsearch'
+    }
+  }
+}
+
+module espool2 'modules_private/aks_agent_pool.bicep' = {
+  name: '${serviceLayerConfig.name}-espool2'
+  params: {
+    AksName: cluster.outputs.aksClusterName
+    PoolName: 'espoolz2'
+    agentVMSize: elasticPoolPresets[clusterSize].vmSize
+    agentCount: 2
+    agentCountMax: 4
+    availabilityZones: [
+      '2'
+    ]
+    subnetId: ''
+    nodeTaints: ['app=elasticsearch:NoSchedule']
+    nodeLabels: {
+      app: 'elasticsearch'
+    }
+  }
+}
+
+module espool3 'modules_private/aks_agent_pool.bicep' = {
+  name: '${serviceLayerConfig.name}-espool3'
+  params: {
+    AksName: cluster.outputs.aksClusterName
+    PoolName: 'espoolz3'
+    agentVMSize: elasticPoolPresets[clusterSize].vmSize
+    agentCount: 2
+    agentCountMax: 4
+    availabilityZones: [
+      '3'
+    ]
+    subnetId: ''
+    nodeTaints: ['app=elasticsearch:NoSchedule']
+    nodeLabels: {
+      app: 'elasticsearch'
+    }
+  }
+}
+
 
 //--------------Flux Config---------------
 module flux 'modules_private/flux_config.bicep' = if (enableSoftwareLoad) {
@@ -1000,10 +1074,14 @@ module flux 'modules_private/flux_config.bicep' = if (enableSoftwareLoad) {
     aksFluxAddOnReleaseNamespace: cluster.outputs.fluxReleaseNamespace
     fluxConfigName: serviceLayerConfig.gitops.name
     fluxConfigRepo: serviceLayerConfig.gitops.url
-    fluxConfigRepoTag: serviceLayerConfig.gitops.tag
-    fluxRepoPath: serviceLayerConfig.gitops.path
+    fluxRepoComponentsPath: serviceLayerConfig.gitops.components
+    fluxRepoApplicationssPath: serviceLayerConfig.gitops.applications
+    fluxConfigRepoBranch: serviceLayerConfig.gitops.branch
   }
   dependsOn: [
     cluster
+    espool1
+    espool2
+    espool3
   ]
 }

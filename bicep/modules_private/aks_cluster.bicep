@@ -369,70 +369,70 @@ var userPoolProfile = {
 }
 
 
-@description('Second User Pool presets')
-var secondPoolPresets = {
-  // 2 vCPU, 4 GiB RAM, 8 GiB Temp Disk, (1600) IOPS, 128 GB Managed OS Disk
-  CostOptimised : {
-    vmSize: 'Standard_B2s'
-    minCount: 1
-    maxCount: 3
-    availabilityZones: []
-    osDiskType: 'Managed'
-    osDiskSize: 128
-    maxPods: 30
-  }
-  // 2 vCPU, 8 GiB RAM, 16GiB Temp Disk (4000) IOPS, 128 GB Managed OS Disk
-  Standard : {
-    vmSize: 'Standard_D2s_v3'
-    minCount: 8
-    maxCount: 16
-    availabilityZones: [
-      '1'
-      '2'
-      '3'
-    ]
-    osDiskType: 'Managed'
-    osDiskSize: 128
-    maxPods: 30
-  }
-  // 4 vCPU, 16 GiB RAM, 32 GiB SSD, (8000) IOPS, 128 GB Managed OS Disk
-  HighSpec : {
-    vmSize: 'Standard_D4s_v3'
-    minCount: 3
-    maxCount: 5
-    availabilityZones: [
-      '1'
-      '2'
-      '3'
-    ]
-    osDiskType: 'Managed'
-    osDiskSize: 128
-    maxPods: 50
-  }
-}
+// @description('Second User Pool presets')
+// var secondPoolPresets = {
+//   // 2 vCPU, 4 GiB RAM, 8 GiB Temp Disk, (1600) IOPS, 128 GB Managed OS Disk
+//   CostOptimised : {
+//     vmSize: 'Standard_B2s'
+//     minCount: 1
+//     maxCount: 3
+//     availabilityZones: []
+//     osDiskType: 'Managed'
+//     osDiskSize: 128
+//     maxPods: 30
+//   }
+//   // 2 vCPU, 8 GiB RAM, 16GiB Temp Disk (4000) IOPS, 128 GB Managed OS Disk
+//   Standard : {
+//     vmSize: 'Standard_D2s_v3'
+//     minCount: 8
+//     maxCount: 16
+//     availabilityZones: [
+//       '1'
+//       '2'
+//       '3'
+//     ]
+//     osDiskType: 'Managed'
+//     osDiskSize: 128
+//     maxPods: 30
+//   }
+//   // 4 vCPU, 16 GiB RAM, 32 GiB SSD, (8000) IOPS, 128 GB Managed OS Disk
+//   HighSpec : {
+//     vmSize: 'Standard_D4s_v3'
+//     minCount: 3
+//     maxCount: 5
+//     availabilityZones: [
+//       '1'
+//       '2'
+//       '3'
+//     ]
+//     osDiskType: 'Managed'
+//     osDiskSize: 128
+//     maxPods: 50
+//   }
+// }
 
-var secondPoolProfile = {
-  name: 'espool'
-  mode: 'User'
-  osType: 'Linux'
-  type: 'VirtualMachineScaleSets'
-  osDiskType: secondPoolPresets[ClusterSize].osDiskType
-  osDiskSizeGB: secondPoolPresets[ClusterSize].osDiskSize
-  vmSize: secondPoolPresets[ClusterSize].vmSize
-  count: secondPoolPresets[ClusterSize].minCount
-  minCount: secondPoolPresets[ClusterSize].minCount
-  maxCount: secondPoolPresets[ClusterSize].maxCount
-  availabilityZones: secondPoolPresets[ClusterSize].availabilityZones
-  enableAutoScaling: true
-  maxPods: secondPoolPresets[ClusterSize].maxPods
-  vnetSubnetID: !empty(subnetId) ? subnetId : json('null')
-  upgradeSettings: {
-    maxSurge: '33%'
-  }
-}
+// var secondPoolProfile = {
+//   name: 'espool'
+//   mode: 'User'
+//   osType: 'Linux'
+//   type: 'VirtualMachineScaleSets'
+//   osDiskType: secondPoolPresets[ClusterSize].osDiskType
+//   osDiskSizeGB: secondPoolPresets[ClusterSize].osDiskSize
+//   vmSize: secondPoolPresets[ClusterSize].vmSize
+//   count: secondPoolPresets[ClusterSize].minCount
+//   minCount: secondPoolPresets[ClusterSize].minCount
+//   maxCount: secondPoolPresets[ClusterSize].maxCount
+//   availabilityZones: secondPoolPresets[ClusterSize].availabilityZones
+//   enableAutoScaling: true
+//   maxPods: secondPoolPresets[ClusterSize].maxPods
+//   vnetSubnetID: !empty(subnetId) ? subnetId : json('null')
+//   upgradeSettings: {
+//     maxSurge: '33%'
+//   }
+// }
 
 
-var agentPoolProfiles = concat(array(systemPoolProfile), array(userPoolProfile), array(secondPoolProfile))
+var agentPoolProfiles = concat(array(systemPoolProfile), array(userPoolProfile))
 
 var aks_addons = union({
   azurepolicy: {
@@ -584,6 +584,9 @@ output aksOidcFedIdentityProperties object = {
 
 @description('Specifies the name of the AKS Managed Resource Group.')
 output aksNodeResourceGroup string = aks.properties.nodeResourceGroup
+
+@description('Specifies the name of the AKS Cluster.')
+output aksClusterName string = aks.name
 
 
 /*

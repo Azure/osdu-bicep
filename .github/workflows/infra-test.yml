@@ -350,7 +350,7 @@ jobs:
           azcliversion: ${{ env.AZCLIVERSION }}
           inlineScript: |
             DEPNAME='Dep${{ github.run_number }}'
-            PARAMS="location=$REGION applicationClientId=${{ secrets.STAMP_CLIENT_ID }}'"
+            PARAMS="location=$REGION applicationClientId=${{ secrets.STAMP_CLIENT_ID }}"
             az deployment group create -f bicep/main.bicep -g $RESOURCE_GROUP -p ${{ env.ParamFilePath }} -p $PARAMS --name $DEPNAME --verbose
             az deployment operation group list --resource-group $RESOURCE_GROUP --name $DEPNAME
 
