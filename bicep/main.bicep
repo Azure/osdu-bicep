@@ -988,21 +988,22 @@ module cluster 'modules_private/aks_cluster.bicep' = {
     admin_ids: clusterAdminIds
     workloadIdentityEnabled: true
     keyvaultEnabled: true
-    fluxGitOpsAddon:true
+    fluxGitOpsAddon: true
+    azurepolicy: 'audit'
   }
 }
 
 @description('Elastic User Pool presets')
 var elasticPoolPresets = {
-  // 2 vCPU, 4 GiB RAM, 8 GiB Temp Disk, (1600) IOPS, 128 GB Managed OS Disk
+  // 4 vCPU, 15 GiB RAM, 28 GiB SSD, (12800) IOPS, Ephemeral OS Disk
   CostOptimised : {
     vmSize: 'Standard_DS3_v2'
   }
-  // 2 vCPU, 8 GiB RAM, 16GiB Temp Disk (4000) IOPS, 128 GB Managed OS Disk
+  // 4 vCPU, 15 GiB RAM, 28 GiB SSD, (12800) IOPS, Ephemeral OS Disk
   Standard : {
     vmSize: 'Standard_DS3_v2'
   }
-  // 4 vCPU, 16 GiB RAM, 32 GiB SSD, (8000) IOPS, 128 GB Managed OS Disk
+  // 4 vCPU, 15 GiB RAM, 28 GiB SSD, (12800) IOPS, Ephemeral OS Disk
   HighSpec : {
     vmSize: 'Standard_DS3_v2'
   }
