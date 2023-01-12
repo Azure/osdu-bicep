@@ -586,7 +586,7 @@ module vaultEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = i
   name: '${commonLayerConfig.name}-azure-keyvault-endpoint'
   params: {
     resourceName: keyvault.outputs.name
-    subnetResourceId: network.outputs.subnetIds[0]
+    subnetResourceId: subnetId
     serviceResourceId: keyvault.outputs.id
     groupIds: [ 'vault']
     privateDnsZoneGroup: {
@@ -710,7 +710,7 @@ module storageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' =
   name: '${commonLayerConfig.name}-azure-storage-endpoint'
   params: {
     resourceName: configStorage.outputs.name
-    subnetResourceId: network.outputs.subnetIds[0]
+    subnetResourceId: subnetId
     serviceResourceId: configStorage.outputs.id
     groupIds: [ 'blob']
     privateDnsZoneGroup: {
@@ -803,7 +803,7 @@ module graphEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.1' = i
   name: '${commonLayerConfig.name}-cosmos-db-endpoint'
   params: {
     resourceName: database.outputs.name
-    subnetResourceId: network.outputs.subnetIds[0]
+    subnetResourceId: subnetId
     serviceResourceId: database.outputs.id
     groupIds: [ 'sql']
     privateDnsZoneGroup: {
@@ -868,7 +868,7 @@ module partitionStorageEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint
   name: '${partitionLayerConfig.name}-azure-storage-endpoint-${index}'
   params: {
     resourceName: partitionStorage[index].outputs.name
-    subnetResourceId: network.outputs.subnetIds[0]
+    subnetResourceId: subnetId
     serviceResourceId: partitionStorage[index].outputs.id
     groupIds: [ 'blob']
     privateDnsZoneGroup: {
@@ -942,7 +942,7 @@ module partitionDbEndpoint 'br:osdubicep.azurecr.io/public/private-endpoint:1.0.
   name: '${partitionLayerConfig.name}-cosmos-db-endpoint-${index}'
   params: {
     resourceName: partitionDb[index].outputs.name
-    subnetResourceId: network.outputs.subnetIds[0]
+    subnetResourceId: subnetId
     serviceResourceId: partitionDb[index].outputs.id
     groupIds: [ 'sql']
     privateDnsZoneGroup: {
